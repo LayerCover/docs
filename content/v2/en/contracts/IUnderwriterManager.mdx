@@ -1,0 +1,84 @@
+---
+title: IUnderwriterManager
+description: Interface for managing capital allocation across underwriting pools.
+---
+
+<Callout type="info">
+  View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
+</Callout>
+
+The **IUnderwriterManager** serves as the central registry for capital allocation. It tracks how much capital each underwriter (Syndicate) has pledged to each pool and enforces capacity limits.
+
+## Interface
+
+```solidity
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.20;
+
+import {Types} from "../libraries/helpers/Types.sol";
+
+interface IUnderwriterManager {
+    // ---- Views ----
+    function poolAllocationManager() external view returns (address);
+    function intentMatcher() external view returns (address);
+    function getUnderwriterAllocations(address user) external view returns (uint256[] memory);
+    function getUnderwriterPoolPledge(address user, uint256 poolId) external view returns (uint256);
+    function getPoolPayoutData(uint256 poolId)
+        external
+        view
+        returns (address[] memory adapters, uint256[] memory capitalPerAdapter, uint256 totalCapital);
+    function getPoolUnderwriterCount(uint256 poolId) external view returns (uint256);
+    function getCapitalPendingWithdrawal(uint256 poolId) external view returns (uint256);
+    function getPoolCapitalHeadroom(uint256 poolId) external view returns (uint256 activeCapital, uint256 availableCoverage);
+    function getActivePledgeForRewards(address user, uint256 poolId) external view returns (uint256);
+    function getTotalCapitalPledgedToPool(uint256 poolId) external view returns (uint256);
+
+    // ---- Syndicate interactions ----
+    function requestWithdrawal(uint256 amount) external;
+    function executeWithdrawal(uint256 requestIndex, uint256 amountValue) external;
+    function cancelWithdrawal(uint256 requestIndex) external;
+
+    // ---- Intent matcher hooks ----
+    function allocateIntentCapital(
+        address underwriter,
+        uint256 poolId,
+        uint256 coverageAmount,
+        uint32 coverageDuration,
+        bytes32 reservationKey
+    ) external returns (uint256 reservedShares);
+    function releaseIntentCapital(
+        address underwriter,
+        uint256 poolId,
+        uint256 coverageAmount,
+        bytes32 reservationKey
+    ) external;
+
+    // ---- Hooks from CapitalPool / system ----
+    function onCapitalDeposited(address underwriter, uint256 amount) external;
+    function onWithdrawalRequested(address underwriter, uint256 principalComponent) external;
+    function onCapitalWithdrawn(address underwriter, uint256 principalComponentRemoved, bool isFullWithdrawal) external;
+    function onLossRealized(address underwriter, uint256 principalComponentReduced) external;
+
+    // ---- Helper contract addresses ----
+    function getIntentAllocationsContract() external view returns (address);
+
+    // function getPoolUnderwritersPaginated(uint256 poolId, uint256 cursor, uint256 limit) external view returns (address[] memory underwriters_, uint256 nextCursor); 
+    // ---- Admin ----
+    function setMaxAllocationsPerUnderwriter(uint256 _newMax) external;
+    function setDeallocationNoticePeriod(uint256 _newPeriod) external;
+    function setPoolMutexGroup(uint256[] calldata poolIds, uint256 groupId) external;
+    function setSyndicateFactory(address _syndicateFactory) external;
+    function setPoolAllocationManager(address _poolAllocationManager) external;
+    function setMaxLeverageRatio(uint256 newRatio) external;
+    function setIntentMatcher(address matcher) external;
+    function setIntentOrderBook(address orderBook) external;
+    function setSyndicateDepositCap(address syndicate, uint256 cap) external;
+
+    // ---- New pull-based loss settlement ----
+    function settlePendingLosses() external;
+    function settlePendingLossesFor(address user) external;  // RiskManager-triggered
+
+    function getPoolTotalAtBlock(uint256 poolId, uint256 blockNumber) external view returns (uint256);
+    function getPledgeAtBlock(address user, uint256 poolId, uint256 blockNumber) external view returns (uint256);
+}
+```

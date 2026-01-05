@@ -1,0 +1,100 @@
+---
+title: ICapitalPool
+description: Interface for the CapitalPool, the secure vault for idle assets.
+---
+
+<Callout type="info">
+  View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
+</Callout>
+
+The **ICapitalPool** is the underlying vault where idle assets are held when they are not deployed to an external yield strategy. It serves as the "custody" layer for the protocol.
+
+## Interface
+
+```solidity
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.20;
+
+import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Types} from "../libraries/helpers/Types.sol";
+
+interface ICapitalPool is IERC4626 {
+    /* =========================
+       ===== Admin / Config =====
+       ========================= */
+
+    function setUnderwriterNoticePeriod(uint256 newPeriod) external;
+    function setUnderwriterNoticePeriodFromRiskManager(uint256 newPeriod) external;
+    function setPayoutManager(address _payoutManager) external;
+    function configureReinsurance(address controller, uint256 bufferBps, uint256 maxDrawPerCall) external;
+    function setYieldAdapterRewardPool(address adapterAddress, uint256 rewardPoolId) external;
+    function setDepositCap(uint256 newCap) external;
+    function depositCap() external view returns (uint256);
+    function setBaseYieldAdapter(Types.YieldPlatform _platform, address _adapterAddress) external;
+
+    /* ============================
+       ===== Underwriter Flows =====
+       ============================ */
+
+    /// @notice UM deposits on behalf of a user and sets/uses their adapter choice.
+    function depositFor(address user, uint256 amount, Types.YieldPlatform yieldChoice) external;
+
+    /// @notice Notice-queue management (invoked by UnderwriterManager).
+    function requestWithdrawal(address user, uint256 sharesToBurn) external;
+    function cancelWithdrawalRequest(address user, uint256 requestIndex) external;
+    function executeWithdrawal(address user, uint256 requestIndex) external;
+    function executeWithdrawalPartial(address user, uint256 requestIndex, uint256 maxAmountValue) external;
+    function underwriterNoticePeriod() external view returns (uint256);
+
+    /* ==========================
+       ===== Risk Operations =====
+       ========================== */
+
+    /// @notice LossDistributor burns shares to realize losses; principal is scaled accordingly.
+    function burnSharesForLoss(address underwriter, uint256 burnAmount) external;
+
+    /// @notice Harvest strategy yield from an adapter and distribute via RewardDistributor.
+    function harvestAndDistributeYield(address adapterAddress) external;
+
+    /* =========================
+       ===== View Helpers  =====
+       ========================= */
+
+    /// @notice Per-underwriter adapter selection and account summary.
+    function getUnderwriterAdapterAddress(address underwriter) external view returns (address);
+    function getUnderwriterAccount(address underwriter)
+        external
+        view
+        returns (
+            uint256 currentValue,
+            Types.YieldPlatform yieldChoice,
+            uint256 masterShares,
+            uint256 pendingWithdrawalShares
+        );
+
+    /// @notice Principal tracked for pledge scaling in UM.
+    function getUnderwriterPrincipal(address underwriter) external view returns (uint256);
+
+    /// @notice Withdrawal request views (for UIs/UM logic).
+    function getWithdrawalRequestCount(address underwriter) external view returns (uint256);
+    function getUserWithdrawalRequests(address underwriter)
+        external
+        view
+        returns (uint256[] memory shares, uint256[] memory unlockTimestamps);
+    function getMaturedWithdrawalRequests(address underwriter)
+        external
+        view
+        returns (uint256[] memory shares, uint256[] memory unlockTimestamps);
+    function getMaturedWithdrawalShares(address underwriter) external view returns (uint256);
+    function getMaturedWithdrawalValue(address underwriter) external view returns (uint256);
+
+    /// @notice Next upcoming unlock for convenience.
+    function getNextWithdrawalUnlock(address underwriter)
+        external
+        view
+        returns (bool exists, uint256 unlockTimestamp, uint256 shares);
+
+    /// @notice Shares reserved for pending payout settlements.
+    function unsettledPayoutShares() external view returns (uint256);
+}```

@@ -1,0 +1,80 @@
+---
+title: Referral Program
+description: Fund discounts and earn on-chain rewards by distributing LayerCover.
+order: 6
+---
+
+LayerCover’s referral rails enable partners to fund user discounts and collect rewards without negatively impacting Liquidity Provider (LP) yields.
+
+The system is designed for **Mutually Reinforcing Value**: end-users gain access to cheaper protection, referrers earn a transparent revenue stream, and the protocol scales its reach through trusted partners.
+
+## Program at a Glance
+
+Referral logic is executed fully on-chain. When a user purchases cover with your code, the discount is applied to their premium immediately, and your reward is settled in the same transaction.
+
+| Component | Campaign Preset (Efficient Baseline) |
+| :--- | :--- |
+| **Buyer Discount** | **2%** off base premium |
+| **Referrer Reward** | **3%** of base premium |
+| **Source of Funds** | Paid from the **Reinsurance (CAT) Tax** allocation, before LP share |
+
+<Callout type="info">
+  **Flexible Configuration:** Presets are stored on-chain, allowing governance to adjust acquisition spend without requiring contract migrations. You can run multiple codes across different wallets or campaigns simultaneously.
+</Callout>
+
+---
+
+## How It Works
+
+The purchase flow is atomic. There is no off-chain tracking pixel or monthly reconciliation; the **PolicyManager** and **ReferralManager** contracts handle the split instantly.
+
+
+
+1.  **Purchase:** Buyer calls **purchaseCoverWithReferral(code)**.
+2.  **Verification:** **ReferralManager** validates the code and calculates the splits.
+3.  **Settlement:**
+    * **Buyer:** Pays the discounted premium amount.
+    * **Referrer:** Receives the reward instantly (or it accumulates in an on-chain balance).
+    * **Protocol:** The remaining premium is routed to the pools.
+
+> **Example:** On a policy with a **\$1,000** base premium using the 2%/3% preset:
+> * **Buyer Pays:** \$980 (Instant \$20 saving).
+> * **Referrer Earns:** \$30 (Reserved from the protocol's acquisition budget).
+> * **LPs:** Receive their standard allocation, unaffected by the discount.
+
+---
+
+## Partner Benefits
+
+* **Instant, On-Chain Payouts:** Rewards are written directly to the ledger during the purchase. No vesting, no spreadsheets, and no chasing invoices.
+* **Clear Value for Users:** Your code isn't just a tracking tool; it’s a benefit. You provide your community with immediate cost savings.
+* **Transparent Data:** Every referred sale is queryable on-chain. 
+
+---
+
+## Become a Distribution Partner
+
+### 1. Introduce Your Business
+Share your protocol’s reach, target chains, and use cases with the team via [Discord](https://discord.gg/layercover) or the Governance Forum. We want to understand the volume and impact you can drive.
+
+### 2. Verify Operational Details
+Provide the wallet address(es) that will own the referral codes. Once whitelisted, the **ReferralManager** will mint your unique code on-chain.
+
+### 3. Plan the Rollout
+Align on campaign dates and integration strategies. Whether you are embedding coverage into a yield dashboard or bundling it with treasury reports, we help you craft the narrative.
+
+---
+
+## Integration Guide: Embedding Referral Journeys
+
+Maximize conversion by placing coverage prompts at high-intent moments in your user's journey.
+
+### Direct Links
+Use deep links in your documentation, newsletters, or customer emails to land users directly in the purchase flow with your code pre-filled:
+**https://app.layercover.com/buy?ref=YOURCODE**
+
+### In-App CTAs
+Add a **"Protect with LayerCover"** block next to your TVL dashboards or position summaries. explicitly mention that the discount is a benefit negotiated by *your* protocol.
+
+### Activation Campaigns
+Pair your referral code with educational content such as portfolio health checks or treasury risk reviews to explain *why* coverage is relevant right now.

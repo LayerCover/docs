@@ -1,0 +1,113 @@
+---
+title: Access Controls
+description: Permission system and role-based access control in LayerCover
+order: 8
+sidebar: Access Controls
+---
+
+## Overview
+
+LayerCover uses a sophisticated role-based access control (RBAC) system to manage permissions across the protocol. Different roles have specific capabilities to ensure security while enabling efficient operations.
+
+**Key Principles:**
+- **Least Privilege:** Each role has only the minimum permissions needed.
+- **Separation of Duties:** Critical functions require multiple roles.
+- **Time Delays:** Sensitive operations have mandatory waiting periods.
+- **Transparency:** All permission changes are publicly auditable on-chain.
+- **Emergency Access:** Guardian can pause but cannot access funds.
+
+---
+
+## Role Hierarchy
+
+### Overview Table
+
+| Role | Control Type | Primary Responsibilities | Key Restrictions |
+| :--- | :--- | :--- | :--- |
+| **Owner/Admin** | Timelock-governed | Protocol parameters, upgrades, governance | 2-day timelock, no fund access |
+| **Guardian** | Multi-sig (3-of-5) | Emergency pause, incident response | No fund access, cannot upgrade contracts |
+| **Committee** | Staked token holders | Risk assessment, governance proposals | Min 10k tokens staked, 51% quorum |
+| **Risk Admin** | Appointed specialist | Risk ratings, coverage limits, mutex groups | 24-hour timelock, governance-approved |
+| **Fee Recipient** | Protocol treasury | Passive fee collection | No special permissions |
+
+---
+
+## Contract-Specific Access Controls
+
+### PolicyManager
+
+Primary contract that mints PolicyNFTs, tracks cover terms, and gates underwriting parameters like cooldowns and CAT premium splits.
+
+| Function | Owner | Guardian | Committee | Public |
+| :--- | :---: | :---: | :---: | :---: |
+| **purchaseCover()** | · | · | · | ✅ |
+| **increaseCover()** | · | · | · | ✅ |
+| **cancelCover()** | · | · | · | ✅ |
+| **setCatPremiumShareBps()** | ✅ | · | · | · |
+| **setCoverCooldownPeriod()** | ✅ | · | · | · |
+| **setIssuancePaused()** | · | ✅ | · | · |
+
+### RiskManager
+
+Claims pipeline responsible for validating, processing, and settling incidents plus managing salvage recoveries.
+
+| Function | Owner | Guardian | Committee | Public |
+| :--- | :---: | :---: | :---: | :---: |
+| **processClaim()** | · | · | · | ✅ |
+| **claimSalvage()** | · | · | · | ✅ |
+| **sweepSalvage()** | · | · | · | ✅ |
+| **reportIncident()** | · | · | ✅ | · |
+| **setPauseStatus()** | · | ✅ | · | · |
+
+### CapitalPool
+
+Holds underwriting capital, routes deposits into strategies, and enforces withdrawal rules and emergency controls.
+
+| Function | Owner | Guardian | Committee | Public |
+| :--- | :---: | :---: | :---: | :---: |
+| **deposit()** | · | · | · | ✅ |
+| **withdraw()** | · | · | · | ✅ |
+| **requestWithdrawal()** | · | · | · | ✅ |
+| **setWithdrawalPeriod()** | ✅ | · | · | · |
+| **setEmergencyMode()** | · | ✅ | · | · |
+| **addYieldAdapter()** | ✅ | · | · | · |
+| **failAdapter()** | · | ✅ | ✅ | · |
+
+### UnderwriterManager
+
+Allocates capital commitments, tracks risk points, and ensures coverage floors for each pool.
+
+| Function | Owner | Guardian | Committee | Public |
+| :--- | :---: | :---: | :---: | :---: |
+| **allocate()** | · | · | · | ✅ |
+| **deallocate()** | · | · | · | ✅ |
+| **setRiskPoints()** | ✅ | · | ✅ | · |
+| **setCoverageFloor()** | ✅ | · | · | · |
+
+### PoolRegistry
+
+Registry that creates new coverage pools, assigns rate models, and updates risk ratings across the protocol catalog.
+
+| Function | Owner | Guardian | Committee | Public |
+| :--- | :---: | :---: | :---: | :---: |
+| **createPool()** | ✅ | · | · | · |
+| **setRateModel()** | ✅ | · | ✅ | · |
+| **pausePool()** | · | ✅ | ✅ | · |
+| **unpausePool()** | · | ✅ | ✅ | · |
+| **updateRiskRating()** | ✅ | · | ✅ | · |
+
+
+### Timelock Delays
+
+| Action Type | Min Delay | Exec Window | Guardian Cancel? |
+| :--- | :--- | :--- | :---: |
+| **Parameter Changes** | 2 days | 7 days | ✅ |
+| **Contract Upgrades** | 7 days | 7 days | ✅ |
+| **Fee Updates** | 2 days | 7 days | ✅ |
+| **Emergency Pause** | Instant | N/A | ❌ |
+| **Pool Creation** | 2 days | 7 days | ✅ |
+
+
+---
+
+*Last updated: October 2025*

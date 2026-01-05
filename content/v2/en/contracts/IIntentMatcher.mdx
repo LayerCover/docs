@@ -1,0 +1,205 @@
+---
+title: IIntentMatcher
+description: Interface for intent-based coverage pricing and matching.
+---
+
+<Callout type="info">
+  View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
+</Callout>
+
+The **IIntentMatcher** facilitates the "Intent-Based" pricing model. It acts as an order book where buyers can post coverage requests ("Buy Orders") and underwriters can sign off-chain offers ("Intents"). The matcher executes these trades, settling them on-chain.
+
+## Interface
+
+```solidity
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.20;
+
+/**
+ * @title IIntentMatcher
+ * @notice Interface for intent-based coverage pricing system
+ */
+interface IIntentMatcher {
+
+    // ==================== Structs ====================
+
+    struct CoverageIntent {
+        address maker;              // Underwriter offering coverage
+        uint256 poolId;             // Pool to allocate capital from
+        uint256 coverageAmount;     // Amount of coverage offered
+        uint256 premiumRateBps;     // Annual premium rate in basis points
+        uint256 minDuration;        // Minimum coverage duration in seconds
+        uint256 maxDuration;        // Maximum coverage duration in seconds
+        uint256 nonce;              // Nonce for replay protection
+        uint256 expiry;             // Intent expiration timestamp
+        uint256 salt;               // Unique salt to avoid hash collisions
+    }
+
+    struct CoverageBuyOrder {
+        address taker;              // Coverage buyer
+        uint256 poolId;             // Pool to buy coverage from
+        uint256 coverageAmount;     // Coverage desired
+        uint256 maxPremiumRateBps;  // Maximum annual rate willing to pay
+        uint256 duration;           // Desired coverage duration in seconds
+        uint256 premiumDeposit;     // Upfront premium payment
+        uint256 nonce;              // Nonce for replay protection
+        uint256 expiry;             // Order expiration timestamp
+        uint256 salt;               // Unique salt for the buy order
+    }
+
+    struct ReserveIntent {
+        address solver;
+        address underwriter;
+        uint256 poolId;
+        uint32 minCoverageDuration;   // Minimum duration (seconds) the syndicate is willing to underwrite
+        uint32 maxCoverageDuration;   // Maximum duration (seconds)
+        uint256 coverageAmount;       // Total coverage reserved for this intent
+        uint256 minFillAmount;        // Minimum fill amount allowed when partial fills are enabled
+        bool allowPartialFill;        // Whether the syndicate permits partial fills
+        uint64 reservationExpiry;     // Timestamp when the reservation expires
+        uint96 nonce;                 // Unique per-reserve-intent nonce
+        address whitelistedBuyer;     // Optional buyer allowlist (address(0) for open)
+    }
+
+    struct OnChainBuyOrder {
+        address buyer;
+        uint256 poolId;
+        uint256 coverageAmount;
+        uint256 maxPremiumRateBps;
+        uint256 duration;
+        uint256 premiumDeposit;
+        uint256 timestamp;
+        bool filled;
+        bool cancelled;
+    }
+
+    // ==================== Events ====================
+
+    event IntentMatched(
+        address indexed underwriter,
+        address indexed buyer,
+        uint256 indexed poolId,
+        uint256 coverageAmount,
+        uint256 premiumRateBps,
+        uint256 duration,
+        uint256 policyId
+    );
+
+    event BuyOrderPosted(
+        uint256 indexed orderId,
+        address indexed buyer,
+        uint256 indexed poolId,
+        uint256 coverageAmount,
+        uint256 maxPremiumRateBps
+    );
+
+    event BuyOrderFilled(
+        uint256 indexed orderId,
+        address indexed filler,
+        uint256 policyId
+    );
+
+    event BuyOrderCancelled(uint256 indexed orderId);
+
+    event NonceIncremented(address indexed user, uint256 newNonce);
+
+    // ==================== Functions ====================
+
+    /**
+     * @notice Executes a matched intent pair (off-chain matching, on-chain settlement)
+     */
+    function executeMatchedIntent(
+        CoverageIntent calldata intent,
+        bytes calldata intentSignature,
+        CoverageBuyOrder calldata order,
+        bytes calldata orderSignature,
+        uint256 fillAmount,
+        ReserveIntent calldata reserveIntent,
+        bytes calldata reserveSignature
+    ) external returns (uint256 policyId);
+
+    function executeMatchedIntentBatch(
+        CoverageIntent[] calldata intents,
+        bytes[] calldata intentSignatures,
+        CoverageBuyOrder calldata order,
+        bytes calldata orderSignature,
+        uint256[] calldata fillAmounts,
+        ReserveIntent[] calldata reserveIntents,
+        bytes[] calldata reserveSignatures
+    ) external returns (uint256[] memory policyIds);
+
+    /**
+     * @notice Posts a buy order to the on-chain order book
+     */
+    function postBuyOrder(CoverageBuyOrder calldata order) external returns (uint256 orderId);
+
+    /**
+     * @notice Fills an on-chain buy order
+     */
+    function fillBuyOrder(
+        uint256 orderId,
+        uint256 offerRateBps,
+        uint256 fillAmount,
+        ReserveIntent calldata reserveIntent,
+        bytes calldata reserveSignature
+    ) external returns (uint256 policyId);
+
+    /**
+     * @notice Cancels an unfilled buy order
+     */
+    function cancelBuyOrder(uint256 orderId) external;
+
+    /**
+     * @notice Gets the best intent rate available for a pool/coverage amount
+     */
+    function getBestIntentRate(uint256 poolId, uint256 coverageAmount) external view returns (uint256 bestRate);
+
+    /**
+     * @notice Gets the best intent rate available for a specific buyer (filters to their orders only).
+     */
+    function getBestIntentRateForBuyer(uint256 poolId, uint256 coverageAmount, address buyer)
+        external
+        view
+        returns (uint256 bestRate);
+
+    /**
+     * @notice Configures the IntentOrderBook contract address
+     */
+    function setIntentOrderBook(address orderBook) external;
+
+    /**
+     * @notice Gets all unfilled buy orders for a pool
+     */
+    function getUnfilledBuyOrders(uint256 poolId) external view returns (uint256[] memory orderIds);
+
+    /**
+     * @notice Gets user's buy orders
+     */
+    function getUserBuyOrders(address user) external view returns (uint256[] memory);
+
+    /**
+     * @notice Gets total order book size
+     */
+    function getBuyOrderCount() external view returns (uint256);
+
+    /**
+     * @notice Generates EIP-712 hash for intent
+     */
+    function getIntentHash(CoverageIntent calldata intent) external view returns (bytes32);
+
+    /**
+     * @notice Generates EIP-712 hash for buy order
+     */
+    function getOrderHash(CoverageBuyOrder calldata order) external view returns (bytes32);
+
+    /**
+     * @notice Increments user's nonce
+     */
+    function incrementNonce() external;
+
+    /**
+     * @notice Gets user's current nonce
+     */
+    function nonces(address user) external view returns (uint256);
+}
+```

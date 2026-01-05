@@ -1,0 +1,45 @@
+---
+title: ISyndicateFactory
+description: Interface for deploying new Syndicate vaults.
+---
+
+<Callout type="info">
+  View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
+</Callout>
+
+The **ISyndicateFactory** is the factory contract used to deploy new Syndicate vaults. It uses the minimal proxy pattern (EIP-1167) to deploy lightweight clones of the Syndicate implementation, reducing gas costs.
+
+## Interface
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+interface ISyndicateFactory {
+    function createSyndicate(
+        address asset,
+        address capitalPool,
+        address underwriterManager,
+        address riskManager,
+        address syndicateManager,
+        address feeRecipient,
+        uint16 performanceFeeBps,
+        uint16 yieldFeeBps,
+        uint8 feeModel,
+        string calldata name,
+        string calldata symbol
+    ) external returns (address syndicate);
+
+    function isRegisteredSyndicate(address account) external view returns (bool);
+
+    function registerSyndicate(address syndicate) external;
+
+    function deregisterSyndicate(address syndicate) external;
+
+    function syndicateCount() external view returns (uint256);
+
+    function getSyndicates(uint256 offset, uint256 limit) external view returns (address[] memory);
+
+    function setPermissionlessCreation(bool allowed) external;
+}
+```

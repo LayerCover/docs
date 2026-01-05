@@ -1,0 +1,84 @@
+---
+title: FAQ
+description: Frequently asked questions about LayerCover
+order: 10
+sidebar: FAQ
+---
+
+import { Callout } from '@/components/Callout'
+
+# Frequently Asked Questions
+
+## For Policyholders
+
+### What happens if a protocol I'm covered for gets hacked?
+
+You can file a claim immediately through the LayerCover dashboard. The process works like an American-style put option: you transfer your affected assets to the protocol and receive an instant USDC payout at your covered value. No governance votes, no waiting periods.
+
+### How long until my claim is paid?
+
+**Instantly.** Claims are settled in a single on-chain transaction. The moment your claim transaction is confirmed, the USDC is in your wallet.
+
+### What's the 7-day cooldown period?
+
+When you purchase a new policy, there's a 7-day window before you can file claims. This prevents opportunistic purchases immediately after an exploit becomes public. Coverage still begins at purchase, but you cannot claim during this initial period.
+
+### Can I cancel my policy early?
+
+Yes. You can cancel any fixed-rate policy before expiration and receive a pro-rata refund of the unused premium. For example, canceling a 90-day policy after 30 days refunds approximately 2/3 of your premium.
+
+### Can I transfer my policy to another wallet?
+
+Yes. Policies are represented as NFTs and are fully transferable. The current holder of the Policy NFT has the right to file claims.
+
+### What assets can I get coverage for?
+
+LayerCover supports two types of coverage:
+- **Stablecoins:** Protection against de-peg events (e.g., USDC, DAI)
+- **Vault Shares:** Protection for ERC-4626 yield-bearing vault positions
+
+---
+
+## For Underwriters
+
+### How do salvage rights work?
+
+When a claim is paid, underwriters receive the "distressed" assets that policyholders surrender. These are called **salvage rights**. If the assets later recover value (e.g., a protocol returns stolen funds), underwriters benefit from that recovery.
+
+### Are salvage rights tradeable?
+
+Yes. Salvage rights are tokenized and can be traded on secondary markets. This lets underwriters exit frozen positions immediately by selling to distressed debt funds, rather than waiting for potential recovery.
+
+### What's the withdrawal notice period?
+
+**30 days.** When you request to withdraw from a syndicate, your capital remains locked for 30 days before you can redeem. This ensures the protocol remains solvent and prevents front-running of claims.
+
+### How are losses distributed?
+
+Losses are distributed pro-rata based on your share of the pool at the exact block of the claim event. You cannot avoid losses by withdrawing after an exploit—the protocol snapshots liability at the moment of the claim.
+
+### What returns can I expect?
+
+Returns come from two sources:
+1. **Premiums:** Your share of policy premiums paid by policyholders
+2. **Yield:** External DeFi yields from idle capital deployed to Aave/Compound
+
+Actual APY varies by syndicate strategy, pool utilization, and market conditions.
+
+---
+
+## General
+
+### Is LayerCover audited?
+
+See our [Audits](/resources/audits) page for the latest security audit information.
+
+### Where can I get help?
+
+- **Discord:** [discord.gg/layercover](https://discord.gg/layercover)
+- **Documentation:** You're reading it!
+- **Technical Reference:** [Contract Interfaces](/contracts)
+
+<Callout type="info">
+  Can't find what you're looking for? Join our Discord and ask the community!
+</Callout>

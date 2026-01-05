@@ -1,0 +1,142 @@
+@import 'katex/dist/katex.min.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 207 90% 54%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 207 90% 54%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 207 90% 54%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 207 90% 54%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Code block styles */
+pre {
+  @apply overflow-x-auto rounded-lg border border-border bg-muted/50 p-4 text-sm;
+}
+
+code {
+  @apply rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 font-mono text-sm text-primary;
+}
+
+pre code {
+  @apply bg-transparent p-0 border-0 text-inherit;
+}
+
+@layer components {
+  .katex-display {
+    @apply my-6 overflow-x-auto rounded-lg border border-border bg-muted/40 p-4 text-lg;
+  }
+
+  .katex-display>.katex {
+    @apply block text-foreground;
+  }
+
+  .math-caption {
+    @apply mt-2 text-sm text-muted-foreground;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  @apply h-2 w-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-muted-foreground/20;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/30;
+}
+
+/* Anchor links */
+.anchor {
+  @apply no-underline;
+}
+
+.anchor:hover {
+  @apply underline;
+}
+
+/* Search dialog */
+[data-search-dialog] {
+  @apply fixed inset-0 z-50 bg-background/80 backdrop-blur-sm;
+}
+
+/* Sidebar active item */
+.sidebar-active {
+  @apply bg-accent text-accent-foreground;
+}
+
+/* TOC active item */
+.toc-active {
+  @apply border-l-2 border-primary text-primary;
+}
+
+/* Mermaid diagrams */
+.mermaid {
+  @apply flex justify-center;
+}
+
+.mermaid-container {
+  @apply rounded-lg border border-border bg-muted/30 p-6;
+}
+
+.mermaid-container svg {
+  @apply max-w-full h-auto;
+}

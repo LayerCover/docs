@@ -1,0 +1,41 @@
+---
+title: Fixed Rate
+description: How intent-based, term-limited underwriting works when you want predictable yield
+order: 1.2
+slug: concepts/underwriting/fixed-rate
+
+---
+For underwriters seeking deterministic returns or wishing to service institutional clients, LayerCover offers the **Fixed Rate Model** (also known as Intent-Based Pricing). Unlike the variable pool where capital is socialized, this model allows you to underwrite specific risks with custom terms. Read the shared [Intent-Based Pricing](/concepts/pricing/intent-based) reference for the canonical mechanics and premium math; this page focuses on underwriter-specific workflows.
+
+## How It Works
+
+The Fixed Rate model operates as a Request-for-Quote (RFQ) marketplace. The process is fully atomic and binding:
+
+1.  **Create Intent:** You (or your Syndicate Manager) sign a cryptographically verifiable "Intent" off-chain. This is a binding offer to provide a specific **coverage amount ($C$)** at a fixed **annualized rate ($r_{fixed}$)** for a fixed **duration ($T$)**.
+2.  **Order Matching:** A policyholder submits an order matching your Intent to the protocol.
+3.  **Capital Locking:** Upon matching, the protocol automatically locks the required portion of your capital in your Syndicate vault for the exact duration of the policy.
+4.  **Premium Payment:** The policyholder pays the full premium upfront, which is routed directly to you.
+
+
+
+## Key Constraints for Underwriters
+
+### 1. No Cancellation or Early Withdrawal
+Once an Intent is matched and a policy is minted, **you cannot cancel the coverage.**
+
+* **Binding Commitment:** Your "Intent" is a binding offer. Once accepted by a buyer, the contract is immutable.
+* **Locked Capital:** The capital backing the policy is "atomically locked" for the exact duration ($T$). You cannot withdraw or reallocate these specific funds until the policy expires, regardless of market conditions or new information.
+
+### 2. Instant Execution Risk
+Any quote you post to the order book is **instantly executable**.
+* There is no "last look" or review period after a buyer submits an order.
+* If you post an artificially low rate (e.g., to influence the variable pool pricing), arbitrage bots or hedgers can atomically fill that quote, forcing you to underwrite the risk at that price.
+
+## Economics and Rewards
+
+### Direct Premium Capture
+In the variable pool, premiums are shared pro-rata among all liquidity providers. In the Fixed Rate model, the **Underwriter receives 100% of the underwriting premium share directly**. This capital is not socialized; you are the sole backer of that specific policy and the payout equals the deterministic formula outlined in the [pricing guide](/concepts/pricing/intent-based#premium-formula).
+
+<Callout type="warning">
+  **Capital Efficiency Note:** Unlike the variable pool, where unutilized capital might be available for withdrawal (subject to floors), capital in Fixed Rate contracts is strictly illiquid for the duration of the term. Ensure your liquidity management strategy accounts for these lock-ups.
+</Callout>

@@ -1,0 +1,97 @@
+---
+title: Risk Framework
+description: How LayerCover Manages Risk
+order: 1.4
+slug: concepts/underwriting/risk-assessment
+---
+
+LayerCover adapts traditional insurance discipline to on-chain underwriting. The protocol provides transparent guardrails including risk ratings, point budgets, and solvency checks that shape how capital is deployed.
+
+While Syndicate Managers retain the authority to make allocation decisions, this framework ensures that systemic risks remain bounded within strict solvency limits.
+
+<Callout type="info">
+  **Institutional Grade:** Our risk framework maps directly to the **Solvency II** capital requirements used in traditional insurance. Pool Ratings correspond to SCR calibrations, and Risk Points mirror portfolio concentration limits.
+</Callout>
+
+## Risk Rating Framework
+
+Every underwriting pool is assigned a discrete rating (AAA through C) based on protocol maturity, audit depth, and incident history.
+
+This rating determines the **Risk Cost** of the capital you pledge. High-quality pools (AAA) consume fewer risk points, allowing for higher leverage. Experimental pools (C) are expensive to underwrite, mechanically throttling their exposure before they can dominate the book.
+
+| Risk Rating | Risk Cost | Max Leverage Capacity | Description |
+| :--- | :--- | :--- | :--- |
+| **AAA** | 1 point | 20x | Top-tier protocols (e.g., Aave, Uniswap) |
+| **AA** | 2 points | 10x | Established protocols with long track records |
+| **A** | 3 points | 6.7x | Mature protocols with proven security |
+| **BBB** | 4 points | 5x | Solid protocols with some history |
+| **BB** | 5 points | 4x | Emerging protocols with audits |
+| **B** | 6 points | 3.3x | Newer protocols with higher risk |
+| **C** | 7 points | 2.9x | Experimental or high-risk protocols |
+
+## The Risk Points Budget
+
+Underwriters operate within a finite **Risk Points Budget** (Default: 20 Points).
+
+This budget acts as a strict, non-risk-based leverage cap. You cannot pledge capital if it would cause your total risk consumption to exceed this limit.
+
+$$
+\text{Points Used} = \sum (\text{Active Pledge}_i \times \text{Risk Cost}_i) \le \text{Total Budget}
+$$
+
+### Example Scenario
+Consider a **\$1M principal** with a 20-point budget:
+1.  **Allocation 1:** \$1M to Aave (AAA, 1 pt) $\rightarrow$ Uses **1 point**.
+2.  **Allocation 2:** \$1M to Uniswap (AA, 2 pts) $\rightarrow$ Uses **2 points**.
+3.  **Allocation 3:** \$1M to Curve (A, 3 pts) $\rightarrow$ Uses **3 points**.
+
+**Total:** You have underwritten **$3M** of coverage (3x leverage) and consumed **6 of your 20 points**. This leaves ample headroom for further allocations, provided they fit within the remaining budget.
+
+
+
+## Correlation Controls (Mutex Groups)
+
+Risk points strictly limit leverage, but they do not capture correlation. To prevent contagion, LayerCover enforces **Mutex Groups** (Mutually Exclusive Groups).
+
+* **The Rule:** You can only underwrite *one* pool per correlated cluster at a time.
+* **The Logic:** If two pools share a critical dependency (e.g., two stablecoins both backed by USDC), a failure in one likely implies a failure in the other.
+* **Enforcement:** Attempting to pledge to **Pool A** while already active in **Pool B** (if both are in the same Mutex group) will cause the transaction to revert.
+
+
+<div className="my-8">
+  <img
+    src="/images/mutex-groups.png"
+    alt="Illustration of mutex groups keeping correlated pools separated"
+    className="w-full rounded-lg border border-border bg-background"
+  />
+</div>
+
+
+## Solvency: The Coverage Floor
+
+The protocol prioritizes solvency over liquidity. The **Underwriter Manager** enforces a hard floor: your pledged collateral must *always* exceed the coverage you have sold plus any pending losses.
+
+$$
+\text{Pledged Capital} \ge \text{Coverage Sold} + \text{Pending Losses}
+$$
+
+If a pool becomes over-utilized (e.g., due to a claim), withdrawals are automatically paused until the floor is restored.
+
+| Scenario | Pledged | Coverage Sold | Available to Withdraw | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **Healthy** | \$10M | \$7M | $3M | ✅ Active |
+| **Stressed** | \$5M | \$4.8M | $0.2M | ⚠️ Restricted |
+| **Breached** | \$5M | \$5.1M | $0 | ❌ Locked |
+
+This mechanism ensures that "lazy" capital cannot exit during a crisis, protecting the system's ability to pay claims.
+
+## Governance & Updates
+
+Risk ratings and Mutex definitions are managed by the Risk Committee and updated via governance.
+
+* **New Allocations:** Updates take effect immediately for all new pledges.
+* **Existing Positions:** If a pool is downgraded (e.g., A $\rightarrow$ B), your risk usage increases. If this pushes you over your budget, you may be required to unwind positions to return to compliance.
+
+---
+
+**Next Steps:** Learn about [Returns & Economics](/concepts/underwriting) to understand yield expectations, or review the [Claims Process](/concepts/underwriting/paying-claims).

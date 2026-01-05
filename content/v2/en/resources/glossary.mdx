@@ -1,0 +1,218 @@
+---
+title: Glossary
+description: Comprehensive glossary of LayerCover terms and concepts
+order: 1
+sidebar: Glossary
+---
+
+A comprehensive reference for all terms and concepts used throughout LayerCover documentation and the protocol.
+
+---
+
+## General Terms
+
+| Term | Definition |
+|------|------------|
+| **Coverage** | The amount of protection a policy provides, denominated in the underlying asset (e.g., USDC). This represents the maximum payout amount if a valid claim is filed. |
+| **Policy** | An insurance contract represented as an ERC-721 NFT. Each policy includes a coverage amount, premium balance, and pool assignment. Policyholders can transfer, trade, or claim against their policies. |
+| **Premium** | The cost of insurance coverage, paid by the policyholder. Premiums are distributed to underwriters backing the policy and the CAT (catastrophic) pool for reinsurance protection. |
+| **Claim** | A request for payout when a covered event occurs. To file a claim, the policyholder must submit the required protocol tokens (e.g., depegged stablecoins) along with their policy NFT. |
+| **Salvage** | Protocol tokens recovered from claimants during the claims process. Salvage is distributed pro-rata to underwriters who were backing the policy at the time of claim (T0). |
+
+---
+
+## Capital & Underwriting
+
+| Term | Definition |
+|------|------------|
+| **Underwriter** | A capital provider who deposits funds into the protocol to back insurance policies and earns premiums and yield in exchange for taking on insurance risk. |
+| **Capital Pool** | The main ERC-4626 vault where underwriters deposit capital. CapitalPool manages allocation, yield generation through external protocols, and claim payouts. |
+| **Shares** | ERC-20 tokens representing ownership in the CapitalPool. Share value rises as premiums and yield accrue and falls when claims generate losses. |
+| **Principal** | The original amount of capital an underwriter deposited, tracked separately from gains and losses to reveal true P&L. |
+| **Allocation** | Committing capital from the CapitalPool to back a specific insurance pool. Underwriters can allocate across pools subject to risk point limits. |
+| **Pledge** | The amount of capital an underwriter has allocated to a specific pool, defining exposure to that pool’s risks and claims. |
+| **Risk Points** | A 12-point budget limiting how much risk an underwriter can take. Riskier pools consume more points per unit of capital. |
+| **Coverage Floor** | Minimum capital requirement per pool that keeps policies fully backed during deallocations, preventing undercollateralization. |
+
+---
+
+## Pools & Risk
+
+| Term | Definition |
+|------|------------|
+| **Pool** | A grouping of insurance policies covering a specific protocol or risk type (e.g., “Aave USDC”). Each pool has unique parameters and a rate model. |
+| **Pool Utilization** | The percentage of available capital sold as coverage. Formula: `Utilization = Coverage Sold / Total Capital Available`. Higher utilization usually increases premium rates. |
+| **Premium Rate** | The annual cost of coverage expressed as APR. Rates are dynamically calculated from pool utilization and the pool’s rate model. |
+| **Rate Model** | A utilization-based curve that sets premium rates. Key parameters include: <ul><li><strong>Base Rate</strong>: Minimum rate at 0% utilization</li><li><strong>Kink</strong>: Utilization level where the curve steepens</li><li><strong>Slope 1</strong>: Rate increase below the kink</li><li><strong>Slope 2</strong>: Accelerated increase above the kink</li></ul> |
+| **Risk Rating** | Letter grade (e.g., A, B, C) classifying pool risk. Higher risk ratings require more risk points to allocate capital, limiting exposure. |
+| **Mutex Group** | A set of pools that cannot be allocated simultaneously. Prevents concentration risk by forcing underwriters to choose one pool per group. |
+
+---
+
+## Syndicates
+
+| Term | Definition |
+|------|------------|
+| **Syndicate** | A professionally managed underwriting vault (ERC-4626) where depositors let a manager allocate capital on their behalf. Comparable to a managed fund. |
+| **Syndicate Manager** | The address authorized to manage allocations, strategy, and risk for a syndicate. Earns incentives via performance fees. |
+| **Performance Fee** | Percentage of profits paid to the manager (capped at 20%), charged only on gains above the high-water mark. |
+| **High-Water Mark** | The previous peak share price of the syndicate. Performance fees apply only when returns exceed this benchmark. |
+| **Auto-Allocation** | Automated deployment of deposits into pre-configured pools following the manager’s strategy. |
+| **Reserve Ratio** | Portion of assets kept idle to meet withdrawals (e.g., 5%). Ensures redeemability without disrupting allocations. |
+
+---
+
+## Reinsurance
+
+| Term | Definition |
+|------|------------|
+| **CAT Pool** | The catastrophic backstop for extreme loss events. Structured into tranches with varying risk/reward profiles. |
+| **SharedAssetController** | Smart contract that manages CAT pool tranches and coordinates loss distribution according to priority. |
+| **Tranche** | A CAT pool layer with a defined loss priority. Each tranche is an ERC-4626 vault targeting a specific risk profile. |
+| **Priority** | Numerical ranking for loss absorption order (0 = junior/first loss; higher numbers = senior/last loss). |
+| **Junior Tranche** | First-loss tranche offering highest potential yield and absorbing claims before other tranches. |
+| **Senior Tranche** | Last-loss tranche with lowest risk and yield, tapped only after junior and mezzanine tranches are exhausted. |
+
+---
+
+## Claims & Payouts
+
+| Term | Definition |
+|------|------------|
+| **Claim Processing** | Automated sequence for paying claims: <ol><li>Validate policy ownership and token submission</li><li>Snapshot underwriter pledges at T0</li><li>Execute payout waterfall</li><li>Distribute salvage to T0 underwriters</li></ol> |
+| **Payout Waterfall** | Ordered funding sources for claims: <ol><li>Yield adapter withdrawals (Aave, Compound, etc.)</li><li>Emergency interest-bearing token transfers</li><li>CAT pool draw if capital is insufficient</li></ol> |
+| **T0 (Time Zero)** | Block number when a claim is filed. Underwriter positions snapshot at T0 to lock salvage rights and prevent gaming. |
+| **Checkpointed Salvage** | Mechanism tying salvage rights to the underwriters backing a policy at T0, blocking late entrants from claiming salvage. |
+
+---
+
+## Yield & Rewards
+
+| Term | Definition |
+|------|------------|
+| **Yield Adapter** | Smart contract integrating with external DeFi protocols (Aave, Compound, etc.) to deploy idle capital and generate yield. Each adapter targets a specific protocol/asset. |
+| **aTokens** | Aave interest-bearing tokens (e.g., aUSDC) that automatically accrue yield as the lending pool earns interest. |
+| **cTokens** | Compound interest-bearing tokens (e.g., cUSDCv3) that function similarly to aTokens for the Compound protocol. |
+| **Reward Distributor** | Contract that records premium earnings per pool and distributes them to underwriters based on their pledges. |
+| **Loss Distributor** | Contract that allocates claim losses to underwriters pro-rata using pledges at the time of the claim. |
+| **Harvest** | Process of collecting yield from external protocols and crediting it back to the CapitalPool. Anyone can trigger harvests on a regular cadence. |
+
+---
+
+## Withdrawals & Deallocations
+
+| Term | Definition |
+|------|------------|
+| **Withdrawal Request** | Instruction to pull capital out of the CapitalPool, subject to a notice period before execution. |
+| **Notice Period** | Mandatory waiting window (e.g., 7 days) before withdrawals or deallocations complete, protecting against sudden exits. |
+| **Deallocation Request** | Request to reduce capital allocated to a specific pool, also governed by the notice period for stability. |
+| **Matured Request** | Withdrawal or deallocation that has satisfied its notice period and can now be executed. |
+| **Pending Withdrawal Shares** | Shares locked in withdrawal requests awaiting execution; they stop earning new rewards but still bear losses. |
+
+---
+
+## Governance
+
+| Term | Definition |
+|------|------------|
+| **Committee** | Governance token stakers entrusted with special permissions—pausing pools, setting fees, reporting incidents—and acting quickly during emergencies. |
+| **Incident Reporting** | Committee-led process that flags covered events (e.g., hacks, depegs) and can pause affected pools to prevent new policy sales while claims are evaluated. |
+| **Staking** | Locking governance tokens to earn rewards, gain voting rights, and become eligible for committee duties or other delegated responsibilities. |
+| **Governance Proposal** | Formal change request covering parameters, features, or upgrades that token holders vote on through the governance process. |
+
+---
+
+## Technical Terms
+
+| Term | Definition |
+|------|------------|
+| **ERC-4626** | Tokenized vault standard used by CapitalPool, Syndicates, and Tranche Vaults, providing a common interface for deposits, withdrawals, and accounting. |
+| **ERC-721 (NFT)** | Non-fungible token standard where each policy is a unique token that can be transferred, traded, or pledged as collateral. |
+| **Basis Points (BPS)** | Unit that expresses percentages in hundredths of a percent; 100 bps equals 1%, so a 500 bps fee equals 5%. |
+| **Slippage** | Difference between expected and actual execution outcomes when a transaction processes, often driven by utilization changes or market moves. |
+| **Revert** | Transaction failure that rolls back all state changes because validation failed, balances were insufficient, or another error occurred. |
+| **Gas Optimization** | Techniques that reduce transaction costs, such as batching operations, minimizing storage writes, and avoiding unnecessary external calls. |
+
+---
+
+## Actions & Operations
+
+| Term | Definition |
+|------|------------|
+| **Mint** | Creation of new tokens such as CapitalPool shares or policy NFTs; occurs when users deposit capital or purchase policies. |
+| **Burn** | Destruction of tokens, typically happening when shares are redeemed during withdrawals or policies are closed after claims. |
+| **Settle** | Automatic process that applies pending rewards, fees, and losses to bring account balances up to date during an interaction. |
+| **Harvest** | Action that pulls accumulated yield from external protocols (Aave, Compound, etc.) back into the CapitalPool for distribution. |
+| **Rebalance** | Adjustment of capital allocations across pools to maintain a target strategy, respond to utilization changes, or manage risk. |
+| **Sweep** | Retrieval of unclaimed salvage after a grace period expires, allowing governance to redistribute or allocate the recovered assets. |
+
+---
+
+## Referrals
+
+| Term | Definition |
+|------|------------|
+| **Referral Code** | Unique bytes32 identifier that policyholders can enter during purchase to trigger rewards and discounts. |
+| **Referrer** | User who registers a referral code and earns a share of premiums whenever their code is used. |
+| **Buyer Discount** | Premium reduction offered to policyholders who enter a referral code, often expressed as a percentage like 3%. |
+| **Referrer Reward** | Portion of premium (for example, 5%) paid to the referrer to incentivize user acquisition and marketing. |
+
+---
+
+## Emergency & Safety
+
+| Term | Definition |
+|------|------------|
+| **Emergency Mode** | Protective state where withdrawals rely solely on idle capital, bypassing yield adapters when external protocols appear compromised. |
+| **Pause** | Temporary suspension of actions such as deposits or policy purchases, initiated by governance or the committee to mitigate threats. |
+| **Failed Adapter** | Yield adapter flagged as non-functional, blocking new deposits and triggering emergency withdrawal procedures for its positions. |
+| **Reentrancy Guard** | Contract pattern that prevents recursive calls during execution, protecting against reentrancy exploits. |
+| **Access Control** | Role-based permission system that restricts access to sensitive functions across the protocol. |
+
+---
+
+## Events & Monitoring
+
+| Term | Definition |
+|------|------------|
+| **Event** | On-chain log emitted by contracts to announce state changes such as deposits, claims, or allocation updates. |
+| **Subgraph** | Indexed dataset accessible via GraphQL that aggregates LayerCover activity for analytics and app consumption. |
+| **Entity** | Structured representation within the subgraph that models protocol objects like policies, pools, or claims. |
+| **Query** | Data request sent to the subgraph or blockchain to retrieve filtered, sorted, or aggregated information. |
+
+---
+
+## Mathematical Concepts
+
+| Term | Definition |
+|------|------------|
+| **Pro-Rata** | Distribution method that allocates amounts proportional to each participant’s share of the total, used for salvage, losses, and rewards. |
+| **Utilization Rate** | Metric calculated as `Coverage Sold / Available Capital`, showing how much pool capacity backs active policies. |
+| **Share Price** | For ERC-4626 vaults, `Total Assets / Total Shares`; rises with premiums and yield, falls when losses occur. |
+| **APY (Annual Percentage Yield)** | Yearly return measure that includes compounding, commonly used to present underwriting yields. |
+| **APR (Annual Percentage Rate)** | Yearly rate without compounding, typically used to quote policy premium rates. |
+
+---
+
+## Related Protocols
+
+| Term | Definition |
+|------|------------|
+| **Aave** | Decentralized lending protocol that LayerCover integrates with for both yield generation on idle capital and insurance coverage products. |
+| **Compound** | Lending protocol used similarly to Aave for earning yield and backing insurance offerings within LayerCover. |
+| **Chainlink** | Decentralized oracle network that can supply price feeds, rate data, and other external information to the protocol. |
+| **USDC / USDT / DAI** | Leading stablecoins that act as the primary assets for policy coverage amounts and underwriting deposits. |
+
+---
+
+## Need More Help?
+
+Can't find a term? Have a question about how something works?
+
+- Visit our [Discord](https://discord.gg/layercover) for community support
+- Read the [Technical Reference](/technical-reference) for deep dives
+- Browse the [External Resources](/resources/external-resources) for additional learning materials
+
+---
+
+*This glossary is regularly updated as the protocol evolves. Last updated: October 2025*

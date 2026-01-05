@@ -1,0 +1,68 @@
+---
+title: IPoolRegistry
+description: Interface for the central registry of underwriting pools.
+---
+
+<Callout type="info">
+  View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
+</Callout>
+
+The **IPoolRegistry** is the source of truth for all underwriting pools. It stores static configuration data (e.g., risk rating, fee recipient) and dynamic state (e.g., pause status) for each pool.
+
+## Interface
+
+```solidity
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Types} from "../libraries/helpers/Types.sol";
+
+/**
+ * @title IPoolRegistry
+ * @notice Interface for the PoolRegistry contract.
+ * @dev CORRECTED: Removed duplicate function declarations and unused enums.
+ * The RiskRating enum is now centralized in Types.
+ */
+interface IPoolRegistry {
+    // --- Functions ---
+
+    function isYieldRewardPool(uint256 poolId) external view returns (bool);
+
+    function getPoolRateModel(uint256 poolId) external view returns (Types.RateModel memory);
+
+    function updateCoverageSold(uint256 poolId, uint256 amount, bool isSale) external;
+
+    function getPoolCount() external view returns (uint256);
+
+    function setPauseState(uint256 poolId, bool isPaused) external;
+
+    function setFeeRecipient(uint256 poolId, address recipient) external;
+
+    function setPoolRiskRating(uint256 poolId, Types.RiskRating newRating) external;
+
+    function getPoolFeeRecipient(uint256 poolId) external view returns (address);
+
+    function getPoolStaticData(uint256 poolId) external view  returns (
+        IERC20 protocolTokenToCover,
+        uint256 totalCoverageSold,
+        bool isPaused,
+        address feeRecipient,
+        uint256 claimFeeBps,
+        Types.RiskRating riskRating
+    );
+
+    function addProtocolRiskPool(
+        address protocolTokenToCover,
+        Types.RateModel calldata rateModel,
+        uint256 claimFeeBps,
+        Types.RiskRating riskRating
+    ) external returns (uint256);
+
+    function setPoolRateModel(uint256 poolId, Types.RateModel calldata rateModel) external;
+
+    function setPoolRateOverride(uint256 poolId, bool enabled, uint256 overrideRateBps) external;
+
+    function getPoolRiskRating(uint256 poolId) external view returns (Types.RiskRating);
+}
+```

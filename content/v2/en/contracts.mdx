@@ -1,0 +1,45 @@
+---
+title: Smart Contracts
+description: API reference and documentation for LayerCover smart contracts.
+order: 11
+sidebar: Smart Contracts
+---
+
+
+
+This section provides detailed reference documentation for the core smart contracts and interfaces of the LayerCover protocol.
+
+## Core Vaults
+
+*   [**ISyndicate**](/contracts/ISyndicate): The main underwriting vault interface.
+*   [**ICapitalPool**](/contracts/ICapitalPool): The underlying asset storage.
+*   [**ISharedAssetController**](/contracts/ISharedAssetController): The Reinsurance (Backstop) system.
+
+## Policy & Risk
+
+*   [**IPolicyManager**](/contracts/IPolicyManager): Policy issuance and lifecycle.
+*   [**IPayoutManager**](/contracts/IPayoutManager): Claim payout execution.
+*   [**IRiskManager**](/contracts/IRiskManager): Risk assessment and incident reporting.
+
+## Management & Registry
+
+*   [**IUnderwriterManager**](/contracts/IUnderwriterManager): Capital allocation and intent management.
+*   [**IPoolRegistry**](/contracts/IPoolRegistry): Central registry for underwriting pools.
+*   [**ISyndicateFactory**](/contracts/ISyndicateFactory): Deployment factory for Syndicates.
+
+## Yield & Liquidity
+
+*   [**IYieldStrategyManager**](/contracts/IYieldStrategyManager): Manages external yield strategies.
+*   [**IYieldAdapter**](/contracts/IYieldAdapter): Interface for integrating new yield sources (e.g., Aave, Compound).
+*   [**IWithdrawalQueue**](/contracts/IWithdrawalQueue): Handles the two-step withdrawal process.
+
+## Assets & Pricing
+
+*   [**IPolicyNFT**](/contracts/IPolicyNFT): The tokenized insurance policy (ERC721).
+*   [**IRateEngine**](/contracts/IRateEngine): Dynamic pricing logic and risk models.
+
+## Intents & Rewards
+
+*   [**IIntentMatcher**](/contracts/IIntentMatcher): Order book and matching for intent-based coverage.
+*   [**IReferralManager**](/contracts/IReferralManager): Referral tracking and rewards.
+*   [**IRewardDistributor**](/contracts/IRewardDistributor): Distribution of protocol rewards.

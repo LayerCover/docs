@@ -1,0 +1,117 @@
+{
+  "network": "base_sepolia",
+  "chainId": 84532,
+  "instance": "usdc",
+  "underwritingToken": {
+    "symbol": "USDC",
+    "address": "0xTODO_ADD_USDC_ADDRESS",
+    "decimals": 6
+  },
+  "description": "Contracts deployed for the USDC underwriting token instance",
+  "contracts": {
+    "core": {
+      "RiskManager": {
+        "address": "0x40779e841120584eeEc960C89C6702AEfE905Bb4",
+        "deploymentBlock": 35878836
+      },
+      "UnderwriterManager": {
+        "address": "0xF27996Ff4779dCCBf0af8A5c96C94454f3650A6f",
+        "deploymentBlock": 35878836
+      },
+      "PoolAllocationManager": {
+        "address": "0x79a570FE5CAF38b726EEbFB6c344759eb79b575E",
+        "deploymentBlock": 35878836
+      },
+      "PolicyNFT": {
+        "address": "0xb673214b902987A4fe776C2757de8Cc226ab0a97",
+        "deploymentBlock": 35878836
+      },
+      "PolicyManager": {
+        "address": "0x0F62EA6c2111aF09c34DaA05B429268B030d94fD",
+        "deploymentBlock": 35878836
+      },
+      "ReferralManager": {
+        "address": "0xd82b07933c2778eab2dD683702De094b22e127F9",
+        "deploymentBlock": 35878836
+      },
+      "YieldStrategyManager": {
+        "address": "0x79315d22B326433538d32D05d47Da1401bE7987C",
+        "deploymentBlock": 35878836
+      },
+      "WithdrawalQueue": {
+        "address": "0x523FfDA2e7aa76540D83d2db0B7f845a122b5B15",
+        "deploymentBlock": 35878836
+      }
+    },
+    "distribution": {
+      "LossDistributor": {
+        "address": "0x266C228D4a0810C92Ea5872DA19Ba6D9faDBeC4a",
+        "deploymentBlock": 35878836
+      },
+      "RewardDistributor": {
+        "address": "0x4aA188CDB2D67e46eeC1b02d4367a24A177c142f",
+        "deploymentBlock": 35878836
+      }
+    },
+    "controllers": {
+      "SharedAssetController": {
+        "address": "0xeEd17d294F31a03a1bDfD3aD12B2ec3CE0843b50",
+        "deploymentBlock": 35878836
+      },
+      "ReinsuranceController": {
+        "address": "0xeEd17d294F31a03a1bDfD3aD12B2ec3CE0843b50",
+        "deploymentBlock": 35878836
+      }
+    },
+    "logicFacets": {
+      "PolicyManagerLifecycle": {
+        "address": "0xA52E2c0EC60D694D6b328619e28066ee74240D87",
+        "deploymentBlock": 35192642
+      },
+      "PolicyManagerPremium": {
+        "address": "0x4B7D721074143AB4A277856261Ca5a65bfa5Ac36",
+        "deploymentBlock": 35192642
+      },
+      "PolicyManagerAdmin": {
+        "address": "0xbf7Cb561450De20940cac24a9354FFf32663f980",
+        "deploymentBlock": 35192642
+      }
+    },
+    "pools": {
+      "PoolRegistry": {
+        "address": "0xa1cc56dE925E0D36ff52E97Dc99f48fBCF0B19D7",
+        "deploymentBlock": 35878836
+      },
+      "CapitalPool": {
+        "address": "0x117E791EbD02139e9Bb537f0b581424ceEd8Cd37",
+        "deploymentBlock": 35878836
+      },
+      "PayoutManager": {
+        "address": "0x55ab22fF89dD40Cd003d1483135E919A8686bFDe",
+        "deploymentBlock": 35878836
+      },
+      "JuniorTrancheVault": {
+        "address": "0x166809f44C34c5Cd2AA0A13d5e371d3dDD1aC69A",
+        "deploymentBlock": 35878836
+      },
+      "MezzanineTrancheVault": {
+        "address": "0x3Bc34E53D6Aa6D9c6e6336C09482d875F3725A5f",
+        "deploymentBlock": 35878836
+      },
+      "SeniorTrancheVault": {
+        "address": "0x207B59510dbfa9542B96938251057D1f088be9f3",
+        "deploymentBlock": 35878836
+      }
+    },
+    "adapters": {
+      "AaveAdapter": {
+        "address": "0x6a0fB59f343445C0f734f12df51650ba0D87012b",
+        "deploymentBlock": 35878836
+      },
+      "CompoundAdapter": {
+        "address": "0x07a2E49B7d7B33FD5B7A5251af1E5d0177c2542c",
+        "deploymentBlock": 35878836
+      }
+    }
+  }
+}

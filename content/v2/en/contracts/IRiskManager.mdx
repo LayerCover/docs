@@ -1,0 +1,51 @@
+---
+title: IRiskManager
+description: Interface for risk assessment, incident reporting, and claim validation.
+---
+
+<Callout type="info">
+  View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
+</Callout>
+
+The **IRiskManager** is responsible for the "risk" side of the protocol. It handles incident reporting, claim validation, and manages the salvage (recovery) process.
+
+## Interface
+
+```solidity
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.20;
+
+import "./IPoolRegistry.sol";
+
+interface IRiskManager {
+    function reportIncident(uint256 _poolId, bool _pauseState, uint256 incidentBlock) external;
+    function setPoolFeeRecipient(uint256 _poolId, address _recipient) external;
+    function setCommittee(address _newCommittee) external;
+    function setIncidentUnderwriterNoticePeriod(uint256 newPeriod) external;
+    function setPayoutManager(address _payoutManager) external;
+    function setInsuredWithdrawRouter(address router) external;
+    function setClaimSenderBlacklist(address sender, bool blacklisted) external;
+    function claimSenderBlacklist(address sender) external view returns (bool);
+    function updateCoverageSold(uint256 poolId, uint256 amount, bool isSale) external;
+    function poolRegistry() external view returns (IPoolRegistry);
+
+    // Token-based salvage claims
+    function claimSalvage(uint256 policyId) external;
+    function getSalvageInfo(uint256 policyId)
+        external view returns (
+            address asset,
+            uint256 totalAmount,
+            uint256 claimedAmount,
+            uint256 remainingAmount,
+            uint256 poolId,
+            uint32 t0Block,
+            uint64 initializedAt
+        );
+    function previewUserClaimablesForPool(
+        address user,
+        uint256 poolId,
+        uint256 offset,
+        uint256 limit
+    ) external view returns (uint256[] memory policyIds, uint256[] memory amounts, address[] memory assets);
+}
+```

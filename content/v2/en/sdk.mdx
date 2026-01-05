@@ -1,0 +1,199 @@
+---
+title: SDK Integration
+description: Integrate LayerCover insurance directly into your dApp
+order: 4
+sidebar: SDK
+---
+
+import { Callout } from '@/components/Callout'
+
+# SDK Integration
+
+The **@layercover/sdk** allows you to add LayerCover insurance to your dApp with just a few lines of code.
+
+---
+
+## Quick Start (3 Lines of Code)
+
+The fastest way to integrate LayerCover is with the **CoverButton** widget:
+
+```bash
+npm install @layercover/sdk ethers @mui/material @emotion/react @emotion/styled
+```
+
+```tsx
+import { CoverButton } from '@layercover/sdk/react';
+
+<CoverButton 
+  signer={signer}     // Your ethers v6 signer
+  poolId={1}          // Pool ID for your protocol
+/>
+```
+
+That's it! The button opens a full purchase modal:
+
+<div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-8">
+<div className="rounded-lg border border-border p-4 text-center">
+<span className="text-2xl">1️⃣</span>
+<p className="text-sm mt-2">User clicks "Cover"</p>
+</div>
+<div className="rounded-lg border border-border p-4 text-center">
+<span className="text-2xl">2️⃣</span>
+<p className="text-sm mt-2">Modal shows quotes & duration</p>
+</div>
+<div className="rounded-lg border border-border p-4 text-center">
+<span className="text-2xl">3️⃣</span>
+<p className="text-sm mt-2">User approves & purchases</p>
+</div>
+</div>
+
+---
+
+## CoverButton Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| **signer** | Signer | **Required.** Ethers v6 signer instance |
+| **poolId** | number | **Required.** Pool ID to purchase cover from |
+| **availableBalance** | number | User's token balance (for display) |
+| **onSuccess** | function | Callback when purchase completes |
+| **referralCode** | string | Your referral code to earn fees |
+| **buttonText** | string | Button label (default: "Cover") |
+| **theme** | object | Custom theme overrides |
+
+### Example with Options
+
+```tsx
+<CoverButton
+  signer={signer}
+  poolId={1}
+  availableBalance={userBalance}
+  referralCode="YOUR_REFERRAL_CODE"
+  onSuccess={() => {
+    toast.success('Coverage purchased!');
+    refetchPositions();
+  }}
+  buttonText="Get Protected"
+/>
+```
+
+---
+
+## Custom Theming
+
+Match the widget to your brand:
+
+```tsx
+import { CoverButton, aaveTheme, createTheme } from '@layercover/sdk/react';
+
+// Use a preset theme
+<CoverButton signer={signer} poolId={1} theme={aaveTheme} />
+
+// Or create your own
+const customTheme = createTheme({
+  colors: {
+    primary: '#00D395',
+    background: '#0A0F1A',
+  }
+});
+
+<CoverButton signer={signer} poolId={1} theme={customTheme} />
+```
+
+**Preset themes:** lightTheme, darkTheme, aaveTheme, eulerTheme, compoundTheme, carbonTheme
+
+---
+
+## BuyCoverModal (Standalone)
+
+For more control, use the modal directly:
+
+```tsx
+import { BuyCoverModal } from '@layercover/sdk/react';
+
+function MyPage() {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  return (
+    <>
+      <button onClick={() => setIsOpen(true)}>Buy Cover</button>
+      
+      <BuyCoverModal
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        signer={signer}
+        poolId={1}
+        onSuccess={() => {
+          setIsOpen(false);
+          // Handle success
+        }}
+      />
+    </>
+  );
+}
+```
+
+---
+
+## Advanced: Headless SDK
+
+For full control without UI components, use the core SDK:
+
+```typescript
+import { LayerCoverSDK } from '@layercover/sdk';
+
+const sdk = new LayerCoverSDK(signer, POLICY_MANAGER_ADDRESS, {
+    apiBaseUrl: 'https://app.layercover.com',
+    deployment: 'base_sepolia_usdc',
+    chainId: 84532,
+});
+
+// Fetch quotes
+const quotes = await sdk.getFixedRateQuotes(poolId);
+
+// Purchase coverage
+const result = await sdk.purchase(poolId, coverAmount, durationWeeks);
+console.log(`Policy ID: ${result.policyId}`);
+```
+
+### useLayerCover Hook
+
+```tsx
+import { useLayerCover } from '@layercover/sdk/react';
+
+const { quotes, bestRate, purchase, loading, error } = useLayerCover({
+    signer,
+    policyManagerAddress: POLICY_MANAGER_ADDRESS,
+    poolId,
+});
+
+const handlePurchase = async () => {
+    const result = await purchase('1000', 4); // 1000 USDC, 4 weeks
+};
+```
+
+---
+
+## Referral Program
+
+Earn 5% of premiums by passing your referral code:
+
+```tsx
+<CoverButton
+  signer={signer}
+  poolId={1}
+  referralCode="YOUR_CODE"  // Register at app.layercover.com
+/>
+```
+
+<Callout type="info">
+  **Partner Benefits:** Referral codes also give your users a 3% discount on premiums.
+</Callout>
+
+---
+
+## Need Help?
+
+- **Examples:** [GitHub SDK Examples](https://github.com/layercover/monorepo/tree/main/packages/sdk/examples)
+- **Support:** [Discord](https://discord.gg/layercover)
+- **Contract Addresses:** [Resources](/resources/contract-addresses)

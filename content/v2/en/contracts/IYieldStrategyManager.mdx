@@ -1,0 +1,59 @@
+---
+title: IYieldStrategyManager
+description: Interface for managing external yield strategies.
+---
+
+<Callout type="info">
+  View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
+</Callout>
+
+The **IYieldStrategyManager** is responsible for routing idle capital from the CapitalPool to external yield protocols (e.g., Aave, Compound). It manages the "Base Yield" component of the system.
+
+## Interface
+
+```solidity
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.20;
+
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IRewardDistributor} from "./IRewardDistributor.sol";
+import {Types} from "../libraries/helpers/Types.sol";
+
+interface IYieldStrategyManager {
+    /* ========= Admin ========= */
+
+    function setCapitalPool(address capitalPool) external;
+    function setRewardDistributor(address distributor) external;
+    function setBaseYieldAdapter(Types.YieldPlatform platform, address adapterAddress) external;
+    function deactivateBaseYieldAdapter(address adapterAddress) external;
+    function setYieldAdapterRewardPool(address adapterAddress, uint256 rewardPoolId) external;
+    function markAdapterFailed(address adapterAddress, string calldata reason) external;
+    function markAdapterRecovered(address adapterAddress) external;
+
+    /* ========= Capital flows ========= */
+
+    function invest(address user, uint256 amount, Types.YieldPlatform choice) external returns (uint256 invested);
+    function withdrawFor(address user, uint256 amount, address recipient) external returns (uint256 withdrawn);
+    function harvestAndDistributeYield(address adapterAddress) external returns (uint256 distributed);
+    function withdrawFromAdapter(address adapterAddress, uint256 amount, address recipient)
+        external
+        returns (uint256 withdrawn);
+    function syncAdapterEmergencyTransfer(address adapter, uint256 valueLost, bool markFailed) external;
+    function recordLoss(address user, uint256 burnShares, uint256 userShareBalanceBefore)
+        external
+        returns (uint256 principalReduced);
+
+    /* ========= Views ========= */
+
+    function asset() external view returns (IERC20);
+    function capitalPool() external view returns (address);
+    function rewardDistributor() external view returns (IRewardDistributor);
+    function totalInvested() external view returns (uint256);
+    function yieldChoice(address user) external view returns (Types.YieldPlatform);
+    function getUnderwriterAdapter(address user) external view returns (address);
+    function getUnderwriterPrincipal(address user) external view returns (uint256);
+    function getPrincipalInAdapter(address adapter) external view returns (uint256);
+    function isAdapterActive(address adapter) external view returns (bool);
+    function isAdapterFailed(address adapter) external view returns (bool);
+}
+```

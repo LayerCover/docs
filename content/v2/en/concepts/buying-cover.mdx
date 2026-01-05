@@ -1,0 +1,64 @@
+---
+title: Buying Cover
+description: How to choose, fund, and manage on-chain policies on LayerCover
+order: 1
+---
+
+import { Callout } from '@/components/Callout'
+
+LayerCover policies live entirely on-chain as transferable NFTs. The protocol offers fixed rate coverage that provides guaranteed protection for your assets.
+
+## The Policy NFT
+
+When you purchase cover, the protocol mints a **Policy NFT** to your wallet. This NFT is not just a receipt—it *is* your insurance policy.
+
+*   **Transferable:** You can move the NFT between wallets (e.g., to a cold storage address or a multisig) without cancelling your coverage.
+*   **Composable:** The NFT can be integrated into other DeFi protocols, used as collateral, or sold on secondary markets.
+*   **Self-Custodied:** You hold the rights to the policy. No centralized database controls your access to claims.
+
+## Fixed Rate Coverage
+
+LayerCover uses a fixed rate model that provides stable, predictable protection for your assets.
+
+<div className="rounded-xl border border-border bg-card text-card-foreground p-6 my-8">
+<h3 className="mt-0 text-xl font-semibold">Fixed Rate Cover</h3>
+<p className="text-muted-foreground mb-4">Guaranteed Term Protection</p>
+<p className="text-sm">Best for institutional allocators and long-term hedging. Think of this like a traditional term insurance policy.</p>
+<ul className="mt-4 space-y-2 text-sm">
+  <li>✅ <strong>Stable:</strong> Lock in a fixed price and duration.</li>
+  <li>✅ <strong>Guaranteed:</strong> Rate cannot change once bought.</li>
+  <li>🔒 <strong>Upfront:</strong> Premium is paid fully in advance.</li>
+</ul>
+<a href="/concepts/buying-cover/fixed-rate-cover" className="block mt-6 text-primary font-medium hover:underline">→ Learn more about Fixed Rate</a>
+</div>
+
+## How to Buy
+
+### 1. Browse Pools
+Navigate to the [LayerCover App](https://app.layercover.com) and find the protocol or asset you want to cover. Risk ratings (e.g., A+, B) help you assess the safety of the underlying protocol compared to the cost of cover.
+
+### 2. Configure Policy
+Select your desired **Coverage Amount** and duration. You will select an expiry date and see quotes from Underwriting Syndicates.
+
+### 3. Mint Policy & Cooldown
+Confirm the transaction to mint your Policy NFT.
+
+<Callout type="warning">
+  **Note:** A <strong>7-day cooldown period</strong> applies to newly purchased policies, during which claims cannot be filed. This mechanism protects the pool from users rushing to buy cover <em>after</em> a hack has already become public.
+</Callout>
+
+### 4. Manage Your Coverage
+Use the LayerCover Dashboard to monitor your policy. Your coverage expires on the set date. You can purchase a new policy to roll over your protection.
+
+## Deep Dive
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+  <a className="block p-4 border rounded-lg hover:border-primary transition-colors no-underline" href="/concepts/buying-cover/fixed-rate-cover">
+    <h4 className="font-bold mb-1">Fixed Rate Mechanics</h4>
+    <p className="text-sm text-muted-foreground">How intents, solvers, and capital reservation work.</p>
+  </a>
+  <a className="block p-4 border rounded-lg hover:border-primary transition-colors no-underline" href="/concepts/buying-cover/claims-payouts">
+    <h4 className="font-bold mb-1">Claims & Payouts</h4>
+    <p className="text-sm text-muted-foreground">The end-to-end lifecycle from filing to payout.</p>
+  </a>
+</div>

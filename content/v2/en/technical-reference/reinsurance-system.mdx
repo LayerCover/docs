@@ -1,0 +1,70 @@
+---
+title: Reinsurance System
+description: Technical reference for the Reinsurance (Backstop) system.
+---
+
+The **Reinsurance System** (also known as the Backstop) provides a shared layer of protection for all Syndicates in the protocol. It acts as a "catastrophe pool" that absorbs losses when individual Syndicates are exhausted.
+
+## Overview
+
+The core component is the **SharedAssetController**, which manages a pool of capital (USDC) contributed by reinsurance providers.
+
+### Key Responsibilities
+1.  **Catastrophe Protection:** Covers claims that exceed a Syndicate's capacity.
+2.  **Capital Efficiency:** Pools risk across the entire protocol, reducing the capital requirements for individual Syndicates.
+3.  **Tranche Management:** Organizes capital into priority tranches (Junior/Senior) to offer different risk/reward profiles to LPs.
+
+---
+
+## Architecture
+
+### **SharedAssetController.sol**
+
+This contract replaces the legacy **BackstopPool**. It is the central vault for reinsurance capital.
+
+### Tranche System
+
+Capital in the Reinsurance System is organized into **Tranches**. For a detailed explanation of how Junior and Senior tranches function, please refer to the [Core Concepts: Capital Waterfall Tranches](/concepts/reinsurance#the-capital-waterfall-tranches) guide.
+
+### Liquidity Waterfall Integration
+
+The Reinsurance System is Step 2 in the [Payout System](/technical-reference/payout-system) waterfall:
+
+1.  Syndicate Adapters
+2.  **Reinsurance System** (This system)
+3.  Idle Cash
+4.  aTokens
+
+When called upon, the **SharedAssetController** draws liquidity from its tranches in **reverse priority order** (Junior first).
+
+---
+
+## Core Concepts
+
+### 1. Dual Yield
+Like Syndicates, the Reinsurance System supports **Dual Yield**:
+*   **Premiums:** A portion of every policy premium sold by *any* Syndicate is routed to the Reinsurance System.
+*   **Base Yield:** Idle capital is deployed to external yield strategies (e.g., Aave) via an **IYieldAdapter**.
+
+### 2. Emergency aToken Transfer
+In extreme market conditions where underlying liquidity is frozen, the Reinsurance System can transfer its strategy tokens (aTokens) directly to claimants to settle obligations.
+
+---
+
+## Integration Details
+
+### Drawing Liquidity
+
+Only the **CapitalPool** or **RiskManager** can trigger a draw.
+
+```solidity
+function drawFund(uint256 amountToDraw) external;
+```
+
+### Adding a Tranche
+
+New tranches are registered by the protocol governance.
+
+```solidity
+function addTranche(address vault, uint8 priority) external onlyOwner;
+```

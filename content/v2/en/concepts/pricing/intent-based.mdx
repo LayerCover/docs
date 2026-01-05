@@ -1,0 +1,70 @@
+---
+title: Fixed Rate
+description: How fixed-rate intents quote deterministic premiums, lock capital, and settle coverage on LayerCover.
+order: 4.1
+slug: concepts/pricing/intent-based
+---
+
+Intent-based pricing powers LayerCover’s fixed-rate marketplace. Instead of streaming premiums, buyers match against binding quotes (“intents”) posted by professional syndicates. Once matched, the premium, coverage amount, and duration are locked for both parties—perfect for teams that need budget certainty or for underwriters that want predictable yield.
+
+<div className="my-8">
+  <img
+    src="/images/intent-pricing.png"
+    alt="Intent-based pricing flow diagram"
+    className="w-full rounded-lg border border-border bg-background"
+  />
+</div>
+
+## Quote Anatomy
+
+Every intent defines three primary parameters:
+
+| Field | Description |
+| :--- | :--- |
+| **Coverage ($C$)** | Amount of protection denominated in USDC (or the relevant asset). |
+| **Rate ($r_{fixed}$)** | Annualized premium quote in basis points. |
+| **Duration ($T$)** | Term length in days (e.g., 30, 60, 90). |
+
+Quotes can also include pool- or protocol-specific constraints, but the triple above drives the economics.
+
+## RFQ & Matching Flow
+
+1. **Intent Creation** – A syndicate manager signs an off-chain intent and registers it with the order book contract. The offer is instantly executable; there is no “last look.”
+2. **Buyer Selection** – Policyholders browse available quotes filtered by protocol, duration, or rate.
+3. **Atomic Settlement** – When a buyer accepts an intent, a single transaction:
+   - Transfers the upfront premium from the buyer.
+   - Locks the quoted coverage amount inside the underwriter’s vault for $T$ days.
+   - Mints the Policy NFT that encodes coverage amount, expiration, and claim rights.
+
+Because the process is atomic, neither party can back out once the transaction is mined.
+
+## Premium Formula
+
+Premiums are deterministic; the contracts simply scale the annual quote by coverage and time:
+
+$$
+P_{intent} = \frac{C \cdot r_{fixed} \cdot T}{365 \times 10000}
+$$
+
+- **C** – Coverage amount.  
+- **$r_{fixed}$** – Annualized rate in basis points.  
+- **T** – Term in days.  
+- **10000** – Basis point divisor.
+
+There is no streaming or utilization adjustment—buyers pay $P_{intent}$ up front, and underwriters collect the entire amount immediately (subject to any vault-level performance fee).
+
+## Capital Behavior
+
+- **Lock-ups:** The matched coverage amount is locked for the full duration. Underwriters cannot withdraw, reallocate, or otherwise reuse that capital until expiry, so intents should factor liquidity needs.
+- **Buyer Cancellation:** Cancelling early refunds the unused premium pro-rata, but capital remains locked until scheduled expiry to keep the option live for the policyholder.
+- **Expiration:** At $T$, the Policy NFT expires, claims are no longer valid, and the capital unlocks automatically.
+
+## When to Use Intent-Based Pricing
+
+- **Policyholders** – Need to guarantee coverage cost across a launch window, audit, or governance vote without monitoring utilization curves.  
+- **Underwriters** – Want to quote bespoke risk, capture 100% of the premium share, or express conviction on short-duration events with known liquidity locks.
+
+## Related Guides
+
+- Buying workflow and vault cover requirements: [Fixed Rate Cover](/concepts/buying-cover/fixed-rate-cover)  
+- Underwriter operations and risk controls: [Fixed Rate Underwriting](/concepts/underwriting/fixed-rate)

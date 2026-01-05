@@ -1,0 +1,78 @@
+---
+title: Protocol-Native Reinsurance
+description: Understanding the Backstop Pool and Shared Asset Controller.
+---
+
+
+## Reinsurance Layer
+
+LayerCover’s Reinsurance Layer serves as the protocol-wide safety net. While primary underwriters manage specific risks, the Reinsurance Layer aggregates liquidity to ensure claims are paid even during extreme liquidity events or solvency shortfalls.
+
+<div className="my-8">
+  <img
+    src="/images/losss-waterfall.png"
+    alt="Loss waterfall showing junior, mezzanine, and senior tranches"
+    className="w-full rounded-lg border border-border bg-background"
+  />
+</div>
+
+Unlike traditional markets where carriers negotiate bilateral reinsurance treaties, LayerCover uses a **Shared Asset Controller** to pool capital from all backstop providers and programmatically deploy it where needed.
+
+## Reinsurance at a Glance
+
+* **Purpose:** To guarantee claim settlement when a primary pool faces a solvency shortfall.
+* **Architecture:** A **Shared Asset Controller** aggregates liquidity from multiple tranches (Junior, Mezzanine, Senior) to maximize capital efficiency.
+* **Funding:** Funded by a "Reinsurance Tax"—a fixed percentage (default 20%) of all gross premiums is routed directly to this layer.
+* **Activation:** Triggers automatically when a primary pool cannot fully cover a valid claim.
+
+---
+
+## The Capital Waterfall (Tranches)
+
+The Reinsurance Layer is not a monolith; it is structured into **Tranche Vaults** with distinct risk/reward profiles. This is known as the "Loss Waterfall". When the backstop is called upon to pay a claim, capital is drawn in a strict reverse-priority order.
+
+
+
+### 1. Junior Tranche (First Loss)
+* **Role:** The first line of defense.
+* **Risk:** Absorbs losses immediately after the primary pool is exhausted.
+* **Reward:** Commands the highest share of the Reinsurance Tax to compensate for high exposure.
+
+### 2. Mezzanine Tranche
+* **Role:** The middle layer.
+* **Risk:** Capital is drawn only after the Junior Tranche is fully depleted.
+* **Reward:** Balances moderate risk with moderate yields.
+
+### 3. Senior Tranche (Last Loss)
+* **Role:** The ultimate safety net ($P_0$).
+* **Risk:** Utilized only in catastrophic tail events where both Junior and Mezzanine layers are empty.
+* **Reward:** Earns a lower, more predictable yield reflecting its protected status.
+
+<Callout type="info">
+  **Yield Efficiency:** Idle capital from *all* tranches is pooled by the Shared Asset Controller and deployed into whitelisted Yield Adapters (e.g., Aave, Compound), ensuring the backstop earns external DeFi yield on top of reinsurance premiums.
+</Callout>
+
+---
+
+## Trigger Logic: When Does It Activate?
+
+The Reinsurance Layer activates strictly based on **Solvency Shortfalls**. It does not compete with primary underwriters; it supports them.
+
+1.  **Primary First:** When a claim is validated, the protocol first attempts to settle it using the specific Risk Pool's pledged capital.
+2.  **Shortfall Detection:** If the primary pool lacks sufficient liquid capital (e.g., due to heavy utilization or pending withdrawals), a **Solvency Shortfall** is detected.
+3.  **Automatic Drawdown:** The Shared Asset Controller instantly unlocks the required funds from the Backstop tranches (Junior $\to$ Senior) to fill the gap.
+
+This ensures that policyholders receive full payouts without delay, even if the specific pool they bought into is temporarily stressed.
+
+---
+
+## The Policyholder Experience
+
+From a user's perspective, the interaction is seamless. The complexity of the waterfall is abstracted away.
+
+* **Single Transaction:** You simply call **processClaim()**.
+* **Atomic Settlement:** The protocol routes the payout from the primary pool and, if necessary, the Reinsurance Layer in a single atomic action.
+* **Custody Agnostic:** Whether your claim involves a **Direct Swap** (transferring stablecoins) or a **Vault Cover** claim (transferring vault shares), the Reinsurance Layer backs the settlement value in the underlying unit of account.
+* **Emergency Liquidity:** In extreme cases where underlying liquidity is unavailable, the Reinsurance Layer can transfer **aTokens** (yield-bearing strategy tokens) directly to the claimant to ensure settlement.
+
+For more details on the payout system, please see the [Payout System](/technical-reference/payout-system) page in the technical reference.

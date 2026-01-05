@@ -1,0 +1,51 @@
+---
+title: IRewardDistributor
+description: Interface for distributing protocol rewards.
+---
+
+<Callout type="info">
+  View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
+</Callout>
+
+The **IRewardDistributor** handles the accounting and distribution of rewards (e.g., governance tokens, yield) to participants. It works in conjunction with the YieldStrategyManager and UnderwriterManager to ensure fair distribution based on capital pledged.
+
+## Interface
+
+```solidity
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.20;
+
+interface IRewardDistributor {
+    function distribute(uint256 poolId, address rewardToken, uint256 rewardAmount, uint256 totalPledgeInPool) external;
+    function pendingRewards(
+        address user,
+        uint256 poolId,
+        address rewardToken
+    ) external view returns (uint256);
+    function settleRewards(
+        address user,
+        uint256 poolId,
+        address rewardToken
+    ) external returns (uint256);
+
+    function claim(address rewardToken) external;
+
+    function settleRewardsForReinsurance(
+        address user,
+        uint256 poolId,
+        address rewardToken,
+        uint256 userPledge
+    ) external returns (uint256);
+
+    function settleRewardsExact(
+        address user,
+        uint256 poolId,
+        address rewardToken,
+        uint256 initialPledge,
+        uint48[] calldata cutTimes,
+        uint256[] calldata cutPledges
+    ) external returns (uint256);
+
+    function setPoolAllocations(address _poolAllocations) external;
+}
+```

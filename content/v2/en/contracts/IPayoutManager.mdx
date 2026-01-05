@@ -1,0 +1,35 @@
+---
+title: IPayoutManager
+description: Interface for claim payouts and loss distribution.
+---
+
+<Callout type="info">
+  View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
+</Callout>
+
+The **IPayoutManager** handles the execution of claim payouts. When a claim is validated by the Risk Manager, this contract coordinates the movement of funds from Syndicates, the Reinsurance pool, and other sources to the claimant.
+
+## Interface
+
+```solidity
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.20;
+
+import {Types} from "../libraries/helpers/Types.sol";
+
+/**
+ * @title IPayoutManager
+ * @notice Interface for PayoutManager contract
+ * @dev Allows RiskManager to execute claim payouts
+ */
+interface IPayoutManager {
+    /**
+     * @notice Executes claim payout by gathering assets from adapters and distributing to claimant/fees
+     * @dev Flow: validates proportions → gathers from adapters → pays claimant first → covers deficit with aTokens/reinsurance → distributes loss
+     * @param p PayoutData struct with claimant, amounts, adapters, capital distribution
+     */
+    function executePayout(Types.PayoutData calldata p) external;
+
+    function setRateEngine(address engine) external;
+}
+```

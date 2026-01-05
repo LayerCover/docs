@@ -1,0 +1,55 @@
+---
+title: IPolicyManager
+description: Interface for policy issuance and lifecycle management.
+---
+
+<Callout type="info">
+  View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
+</Callout>
+
+The **IPolicyManager** is the central entry point for the insurance policy system. It handles policy issuance, modifications, expiration, and claims. It uses a Shared Storage Proxy pattern to split logic across multiple delegates while maintaining a unified state.
+
+## Interface
+
+```solidity
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.20;
+
+import "./IPolicyNFT.sol";
+import {Types} from "../libraries/helpers/Types.sol";
+
+interface IPolicyManager {
+    function policyNFT() external view returns (IPolicyNFT);
+    function isPolicyActive(uint256 policyId) external view returns (bool);
+    function clearIncreasesAndGetPendingAmount(uint256 policyId)
+        external
+        returns (uint256 totalCancelled);
+    function getPendingIncreases(uint256 policyId)
+        external
+        view
+        returns (Types.PendingIncreaseNode[] memory);
+    function setCatPool(address catPoolAddress) external;
+    function setCatPremiumShareBps(uint256 newBps) external;
+    function setCoverCooldownPeriod(uint256 newPeriod) external;
+    function setClaimLockPeriod(uint256 newPeriod) external;
+    function setStakingContract(address newStakingContract) external;
+    function setReserveFactor(uint256 newBps) external;
+    function setRateEngine(address engine) external;
+    function settlePremiumForClaim(uint256 policyId) external returns (bool);
+    function forceVoidPolicy(uint256 policyId, uint256 incidentBlock) external;
+    function catPremiumBps() external view returns (uint16);
+    function purchaseCoverageViaIntent(
+        address buyer,
+        uint256 poolId,
+        uint256 coverageAmount,
+        uint256 agreedRateBps,
+        uint256 premiumDeposit,
+        address backingUnderwriter,
+        uint256 duration,
+        bytes32 reservationKey
+    ) external returns (uint256 policyId);
+
+    function setIntentMatcher(address matcher) external;
+    function setIntentMatcherAuthorization(address matcher, bool allowed) external;
+}
+```

@@ -1,0 +1,40 @@
+---
+title: IReferralManager
+description: Interface for the referral and rewards system.
+---
+
+<Callout type="info">
+  View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
+</Callout>
+
+The **IReferralManager** tracks referral codes and calculates rewards for referrers and discounts for buyers. It integrates with the PolicyManager to apply these benefits during policy purchase.
+
+## Interface
+
+```solidity
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.20;
+
+interface IReferralManager {
+    function recordReferral(
+        bytes32 code,
+        address buyer,
+        uint256 policyId,
+        uint256 premiumPaid,
+        uint256 discountBpsUsed,
+        uint256 referrerRewardBpsUsed
+    ) external returns (address referrer, uint256 discountAmount, uint256 rewardAmount);
+
+    function calculateDiscountedPremium(uint256 originalPremium) external view returns (uint256);
+
+    function isValidCode(bytes32 code) external view returns (bool);
+
+    function getReferrer(bytes32 code) external view returns (address);
+
+    function buyerDiscountBps() external view returns (uint256);
+
+    function referrerRewardBps() external view returns (uint256);
+
+    function fundReferralReward(address referrer, uint256 amount) external;
+}
+```

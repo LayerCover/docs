@@ -1,0 +1,28 @@
+---
+title: Introduction
+description: Get up and running with LayerCover
+order: 1
+---
+
+## Concept
+
+LayerCover is a fully on-chain cover protocol inspired by the Lloyd's of London marketplace. It enables capital providers (underwriters) to deploy single-sided liquidity across multiple independent risk pools, earning premiums while maintaining full control over capital allocation and risk exposure. Cover is underwritten and settled entirely by smart contracts. Payouts can be triggered at any time by policyholders through a direct 1:1 swap of distressed assets for underwriter capital, removing the need for oracles, governance votes, or subjective claims assessments. By combining modular risk assessment, flexible capital reuse, and salvage rights on payout, LayerCover delivers a capital-efficient alternative to mutualised risk pool designs, offering predictable and fully auditable protection for decentralised finance.
+
+import { ThemedImage } from '@/components/ThemedImage'
+
+<div className="my-8">
+  <ThemedImage
+    lightSrc="/doc-assets/illustrations/design-light.png"
+    darkSrc="/doc-assets/illustrations/design-dark.png"
+    alt="LayerCover Protocol Architecture"
+    className="w-full rounded-lg border border-border"
+  />
+</div>
+
+### Background
+
+The global insurance industry has, for centuries, operated as a central marketplace where risk is underwritten, capital is pooled, and claims are settled according to mutually agreed terms. Lloyd's of London, founded in 1688, remains the archetype of such a marketplace where a network of syndicates and underwriters, each providing capital to cover specific risks, coordinated through a central governance framework. In decentralised finance (DeFi), the need for an equivalent mechanism is both clear and urgent. Protocol hacks, smart contract failures, oracle malfunctions, governance exploits, and other tail events have caused billions of dollars in losses in recent years. Unlike traditional finance, DeFi has no central clearinghouse or government-backed safety net. When failures occur, users are typically left with few options: absorb the loss, hope for a socialised bailout, or pursue unenforceable legal remedies.
+
+### Why Now
+
+Decentralised finance (DeFi) has matured from experimental protocols to an ecosystem securing hundreds of billions of dollars in total value locked (TVL). Institutional investors, professional market makers, and on-chain treasuries are now active participants, bringing with them higher expectations for risk management and capital protection. Yet despite this growth, the overwhelming majority of DeFi capital remains uninsured. A purpose-built, on-chain insurance primitive is required: deterministic, rules-based settlement and composable capital. LayerCover addresses this gap with a marketplace for specialised underwriting and predictable, transparent payouts.

@@ -1,0 +1,103 @@
+---
+title: ISharedAssetController
+description: Interface for the Reinsurance (Backstop) system.
+---
+
+<Callout type="info">
+  View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
+</Callout>
+
+The **ISharedAssetController** manages the Reinsurance (Backstop) pool. This system provides a shared layer of protection for all Syndicates by absorbing losses that exceed a Syndicate's capacity.
+
+## Interface
+
+```solidity
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+/**
+ * @title ISharedAssetController
+ * @notice Interface for the reinsurance shared asset controller that manages
+ * tranche vault liquidity and routes drawdowns/premiums for the protocol.
+ */
+interface ISharedAssetController {
+    struct TrancheInfo {
+        address vault;      // ERC4626 tranche vault address
+        uint8 priority;     // 0 = first-loss (junior), higher values = senior
+        bool active;        // whether deposits/redemptions are allowed
+        uint256 assets;     // controller-side recorded assets for this tranche
+        uint256 premiumWeight; // relative premium share weight
+    }
+
+    event TrancheRegistered(address indexed vault, uint8 priority);
+    event TrancheStatusUpdated(address indexed vault, bool active, uint8 priority);
+    event DepositedFor(address indexed vault, uint256 assets);
+    event RedeemedFor(address indexed vault, uint256 assets, address indexed receiver);
+    event PremiumReceived(uint256 amount);
+    event DrawExecuted(uint256 requestedAmount, uint256 sentToCapitalPool);
+    event AdapterChanged(address indexed newAdapter);
+    event DepositToAdapter(uint256 amount);
+    event Harvest(uint256 gainRealized);
+    event HarvestCooldownUpdated(uint256 newCooldown);
+    event WithdrawalNoticeQueued(uint256 indexed index, uint256 amount, uint256 unlockTimestamp);
+    event WithdrawalNoticeCancelled(uint256 indexed index, uint256 amount);
+    event WithdrawalNoticePeriodSet(uint256 newPeriod);
+    event PremiumWeightsUpdated(address indexed vault, uint256 newWeight);
+    event SalvageRegistered(address indexed vault, uint256 contribution);
+    event SalvageDistributed(uint256 amount);
+    event WithdrawalQueueLimitsUpdated(uint256 queueCapacity, uint256 processingLimit);
+
+    function asset() external view returns (IERC20);
+    function adapter() external view returns (address);
+    function capitalPoolAddress() external view returns (address);
+    function policyManagerAddress() external view returns (address);
+    function riskManagerAddress() external view returns (address);
+    function withdrawalNoticePeriod() external view returns (uint256);
+    function totalPendingWithdrawalAmount() external view returns (uint256);
+    function maturedWithdrawalLiquidity() external view returns (uint256);
+    function totalPendingSalvage() external view returns (uint256);
+    function harvestCooldown() external view returns (uint256);
+    function lastHarvestTimestamp() external view returns (uint256);
+    function withdrawalQueueCapacity() external view returns (uint256);
+    function withdrawalProcessingLimit() external view returns (uint256);
+
+    function tranchesLength() external view returns (uint256);
+    function trancheInfo(uint256 idx) external view returns (TrancheInfo memory info);
+    function trancheInfoOf(address vault) external view returns (TrancheInfo memory info);
+
+    function totalSystemAssets() external view returns (uint256);
+    function totalAssetsOf(address vault) external view returns (uint256);
+    function pricePerShareOf(address vault) external view returns (uint256);
+
+    function addTranche(address vault, uint8 priority) external;
+    function setTrancheActive(address vault, bool active) external;
+    function updateTranchePriority(address vault, uint8 newPriority) external;
+
+    function setAdapter(address newAdapter) external;
+    function flushToAdapter(uint256 amount) external;
+    function harvest() external;
+    function processMaturedWithdrawals(uint256 targetAmount, uint256 maxIterations)
+        external
+        returns (uint256 processed, bool fullyProcessed);
+    function setHarvestCooldown(uint256 newCooldown) external;
+    function setWithdrawalQueueLimits(uint256 newQueueCapacity, uint256 newProcessingLimit) external;
+    function setVaultWithdrawalRequestLimit(address vault, uint256 newLimit) external;
+
+    function depositFor(address vault, uint256 assets) external;
+    function redeemFor(address vault, uint256 assets, address receiver) external returns (uint256);
+    function withdrawalRequestCount() external view returns (uint256);
+    function getWithdrawalRequest(uint256 index) external view returns (uint256 amount, uint256 unlockTimestamp);
+    function setTranchePremiumWeights(address[] calldata vaults, uint256[] calldata weights) external;
+    function pendingSalvageOf(address vault) external view returns (uint256);
+    function setPayoutManagerAddress(address payoutManager) external;
+
+    function receiveUsdcPremium(uint256 amount) external;
+    function receiveSalvage(uint256 amount) external;
+    function drawFund(uint256 amountToDraw) external;
+    function setWithdrawalNoticePeriod(uint256 newPeriod) external;
+    function cancelWithdrawalRequest(uint256 index) external;
+    function emergencyTransferFromAdapter(address recipient, uint256 amount) external returns (uint256 transferred);
+}
+```

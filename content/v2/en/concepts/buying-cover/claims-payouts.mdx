@@ -1,0 +1,93 @@
+---
+title: Filing a Claim
+description: How LayerCover processes claims automatically and ensures fast payouts
+order: 6
+---
+
+LayerCover is designed for **instant, rules-based settlement**. Payouts are deterministic, ensuring that when a covered event occurs, your claim is settled automatically without the need for subjective governance votes or long waiting periods.
+
+<div className="my-6 flex justify-center">
+  <div style={{ width: '100%', maxWidth: '360px' }}>
+    <img
+      src="/images/salvage-light.png"
+      alt="Claims salvage flow (light mode)"
+      className="w-full rounded-lg border border-border bg-background dark:hidden"
+    />
+    <img
+      src="/images/salvage-dark.png"
+      alt="Claims salvage flow (dark mode)"
+      className="w-full rounded-lg border border-border bg-background hidden dark:block"
+    />
+  </div>
+</div>
+
+## The Claim Process
+
+As the owner of a Policy NFT, you have the right to file a claim up to the current coverage amount, provided your policy is active and premiums are settled.
+
+1.  **Initiation:** The Policyholder (owner of the Policy NFT) initiates a claim via the claims dashboard.
+2.  **Validation:** The system checks that the policy is active and that the insured asset is available for transfer. No external oracle or governance vote is required to confirm a "loss event."
+3.  **Salvage & Payout:** Based on the type of asset being insured, the protocol executes the claim and you receive the payout instantly from the pool's pledged capital, net of a small claim fee.
+4.  **Finalization:** The payout amount is paid in the pool's underlying asset (e.g., USDC), and the claimed portion of the policy is settled.
+
+## Custody Models
+
+The claims process relies on the policyholder transferring control of the distressed insured asset (the salvage) to the underwriters in exchange for the payout. This ensures underwriters can recover any residual value. LayerCover handles this using one of two models:
+
+### Model A: Direct Swap (Stablecoins)
+
+This model is used for standard assets like stablecoins where transfers are unlikely to be paused. It functions like a perpetual American-style Put Option.
+
+-   **Action:** You approve and transfer the insured asset directly to the protocol.
+-   **Result:** The protocol immediately pays out the covered amount in the pool's underlying asset. The transferred asset becomes the salvage for the underwriters.
+
+### Model B: Vault Cover (ERC-4626 Vaults)
+
+This model is used for yield-bearing vault positions (ERC-4626 shares). You retain full custody of your vault shares until you file a claim.
+
+-   **Non-Custodial Snapshot:** When you purchase cover, the protocol records a snapshot of your vault position value. You keep your shares in your own wallet and continue earning yield.
+-   **Claim Execution:** When you claim, you transfer your vault shares to the protocol and receive an instant USDC payout at the snapshotted value.
+-   **Salvage:** The protocol holds the transferred vault shares as salvage. Even if the vault is paused or shares are devalued, underwriters retain the claim on underlying assets for potential future recovery.
+
+<div className="my-8">
+  <img
+    src="/images/claims-flow.png"
+    alt="LayerCover claims process flowchart"
+    className="w-full rounded-lg border border-border bg-background"
+  />
+</div>
+
+
+<Callout type="warning" emoji="🚨">
+  **Pool Pauses:** If a risk pool is paused due to an incident, new purchases and coverage increases are disabled. However, **claims, reductions, and cancellations remain available** for active policies.
+</Callout>
+
+## Salvage Rights
+
+The assets acquired by the protocol during a claim (the salvage) are distributed to the underwriters.
+
+-   **Entitlement:** Each underwriter's right to the salvage is fixed at the precise block of the claim, proportional to the capital they pledged at that moment.
+-   **Recovery:** This system allows underwriters to potentially recover value from the distressed asset if it later unfreezes or recovers value on secondary markets, reducing their net loss.
+
+### Tradeable Salvage Tokens
+
+LayerCover issues transferable **Salvage Right** tokens, creating an immediate liquidity option for underwriters who don't want to wait for asset recovery.
+
+| Participant | Action | Strategic Goal |
+| :--- | :--- | :--- |
+| **Seller (Underwriter)** | Sells frozen claim rights at a discount | Immediate capital recovery for redeployment |
+| **Buyer (Distressed Fund)** | Buys claim rights at deep discount | Asymmetric upside if assets recover |
+
+This mechanism transforms a binary outcome (total loss vs. full recovery) into a spectrum of liquidity options, ensuring underwriters are never forced to become long-term distressed debt holders.
+
+### Case Study: Capital Recycling (Euler Finance, March 2023)
+
+The March 2023 Euler Finance exploit illustrates the value of tradeable salvage:
+
+1. **The Trap:** Following the $197M exploit, underwriters found themselves holding frozen assets earning zero yield with no exit option.
+2. **The Solution:** With tradeable salvage rights, underwriters could sell their claim at 20 cents on the dollar, immediately recovering $4,000 from a $20,000 exposure.
+3. **The Outcome:** The buyer (a distressed debt fund) waited 3 weeks for the attacker to return ~90% of funds, realizing a **4.5× return**.
+
+<Callout type="info">
+  **Capital Velocity:** By accepting a smaller immediate recovery, underwriters can redeploy capital into productive pools earning 8-12% yields, rather than waiting months for uncertain recovery.
+</Callout>
