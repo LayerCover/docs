@@ -36,16 +36,38 @@ LayerCover uses a sophisticated role-based access control (RBAC) system to manag
 
 ### PolicyManager
 
-Primary contract that mints PolicyNFTs, tracks cover terms, and gates underwriting parameters like cooldowns and CAT premium splits.
+Primary contract that mints PolicyNFTs, tracks cover terms, and gates underwriting parameters like cooldowns and CAT premium splits. All coverage purchases now go through the intent-based flow.
 
 | Function | Owner | Guardian | Committee | Public |
 | :--- | :---: | :---: | :---: | :---: |
-| **purchaseCover()** | · | · | · | ✅ |
-| **increaseCover()** | · | · | · | ✅ |
-| **cancelCover()** | · | · | · | ✅ |
+| **purchaseCoverageViaIntent()** | · | · | · | ✅ (intent callers) |
+| **purchaseVaultCoverageViaIntent()** | · | · | · | ✅ (intent callers) |
+| **cancelCover()** | · | · | · | ✅ (policy owner) |
+| **lapsePolicy()** | · | · | · | ✅ (policy owner) |
+| **sweepPendingCatPremium()** | · | · | · | ✅ |
+| **sweepPendingPoolPremium()** | · | · | · | ✅ |
+| **setIssuancePaused()** | · | ✅ | · | · |
 | **setCatPremiumShareBps()** | ✅ | · | · | · |
 | **setCoverCooldownPeriod()** | ✅ | · | · | · |
-| **setIssuancePaused()** | · | ✅ | · | · |
+| **setClaimLockPeriod()** | ✅ | · | · | · |
+| **setReserveFactor()** | ✅ | · | · | · |
+| **setIntentMatcher()** | ✅ | · | · | · |
+
+### IntentOrderBook
+
+On-chain orderbook handling buy orders (from coverage buyers) and sell orders (quotes from syndicates).
+
+| Function | Owner | Guardian | Committee | Public |
+| :--- | :---: | :---: | :---: | :---: |
+| **postBuyOrder()** | · | · | · | ✅ |
+| **fillBuyOrder()** | · | · | · | ✅ (syndicates) |
+| **cancelBuyOrder()** | · | · | · | ✅ (order creator) |
+| **postSellOrder()** | · | · | · | ✅ |
+| **buyFromQuote()** | · | · | · | ✅ |
+| **cancelSellOrder()** | · | · | · | ✅ (solver/syndicate owner) |
+| **setOrderBookPaused()** | · | ✅ | · | · |
+| **setPolicyManager()** | ✅ | · | · | · |
+| **setUnderwriterManager()** | ✅ | · | · | · |
 
 ### RiskManager
 
@@ -53,48 +75,61 @@ Claims pipeline responsible for validating, processing, and settling incidents p
 
 | Function | Owner | Guardian | Committee | Public |
 | :--- | :---: | :---: | :---: | :---: |
-| **processClaim()** | · | · | · | ✅ |
-| **claimSalvage()** | · | · | · | ✅ |
-| **sweepSalvage()** | · | · | · | ✅ |
+| **processClaim()** | · | · | · | ✅ (policy owner) |
+| **claimSalvage()** | · | · | · | ✅ (underwriters) |
+| **settleMyLosses()** | · | · | · | ✅ |
 | **reportIncident()** | · | · | ✅ | · |
-| **setPauseStatus()** | · | ✅ | · | · |
+| **setPoolFeeRecipient()** | · | · | ✅ | · |
+| **setCommittee()** | ✅ | · | · | · |
+| **setSalvageManager()** | ✅ | · | · | · |
+| **setPayoutManager()** | ✅ | · | · | · |
+| **setClaimSenderBlacklist()** | ✅ | · | · | · |
+| **sweepSalvageRemainder()** | ✅ | · | · | · |
 
 ### CapitalPool
 
-Holds underwriting capital, routes deposits into strategies, and enforces withdrawal rules and emergency controls.
+ERC-4626 vault holding underwriting capital, routing deposits into yield strategies, and enforcing withdrawal rules.
 
 | Function | Owner | Guardian | Committee | Public |
 | :--- | :---: | :---: | :---: | :---: |
 | **deposit()** | · | · | · | ✅ |
-| **withdraw()** | · | · | · | ✅ |
-| **requestWithdrawal()** | · | · | · | ✅ |
-| **setWithdrawalPeriod()** | ✅ | · | · | · |
-| **setEmergencyMode()** | · | ✅ | · | · |
-| **addYieldAdapter()** | ✅ | · | · | · |
-| **failAdapter()** | · | ✅ | ✅ | · |
+| **mint()** | · | · | · | ✅ |
+| **touchNav()** | · | · | · | ✅ (authorized) |
+| **setSystemMode()** | ✅ | · | · | · |
+| **setUnderwriterNoticePeriod()** | ✅ | · | · | · |
+| **setReinsuranceConfiguration()** | ✅ | · | · | · |
+| **setDepositCap()** | ✅ | · | · | · |
+
+> **Note:** Direct `withdraw()` and `redeem()` are disabled. Withdrawals must go through the UnderwriterManager notice-period flow.
 
 ### UnderwriterManager
 
-Allocates capital commitments, tracks risk points, and ensures coverage floors for each pool.
+Capital allocation hub coordinating pool allocations and intent reservations for syndicates.
 
 | Function | Owner | Guardian | Committee | Public |
 | :--- | :---: | :---: | :---: | :---: |
-| **allocate()** | · | · | · | ✅ |
-| **deallocate()** | · | · | · | ✅ |
-| **setRiskPoints()** | ✅ | · | ✅ | · |
-| **setCoverageFloor()** | ✅ | · | · | · |
+| **allocateIntentCapital()** | · | · | · | ✅ (intent matcher) |
+| **releaseIntentCapital()** | · | · | · | ✅ (intent matcher) |
+| **releaseSyndicateReservation()** | · | · | · | ✅ (policy manager) |
+| **setIntentMatcher()** | ✅ | · | · | · |
+| **setSyndicateFactory()** | ✅ | · | · | · |
+| **setCapitalPool()** | ✅ | · | · | · |
+| **setDeallocationNoticePeriod()** | ✅ | · | · | · |
+| **setSyndicateDepositCap()** | ✅ | · | · | · |
+| **setMaxLeverageRatio()** | ✅ | · | · | · |
 
 ### PoolRegistry
 
-Registry that creates new coverage pools, assigns rate models, and updates risk ratings across the protocol catalog.
+Registry that creates new coverage pools and manages pool configuration across the protocol.
 
 | Function | Owner | Guardian | Committee | Public |
 | :--- | :---: | :---: | :---: | :---: |
-| **createPool()** | ✅ | · | · | · |
-| **setRateModel()** | ✅ | · | ✅ | · |
-| **pausePool()** | · | ✅ | ✅ | · |
-| **unpausePool()** | · | ✅ | ✅ | · |
-| **updateRiskRating()** | ✅ | · | ✅ | · |
+| **addProtocolRiskPool()** | ✅ | · | · | · |
+| **setPoolRiskRating()** | ✅ | · | · | · |
+| **setPoolYieldReward()** | ✅ | · | · | · |
+| **setPoolVaultCover()** | ✅ | · | · | · |
+| **setPauseState()** | ✅ | · | · | · (or RM) |
+| **setFeeRecipient()** | · | · | ✅ | · (via RM) |
 
 
 ### Timelock Delays
@@ -110,4 +145,4 @@ Registry that creates new coverage pools, assigns rate models, and updates risk 
 
 ---
 
-*Last updated: October 2025*
+*Last updated: January 2026*

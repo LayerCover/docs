@@ -22,7 +22,7 @@ interface IUnderwriterManager {
     function poolAllocationManager() external view returns (address);
     function intentMatcher() external view returns (address);
     function getUnderwriterAllocations(address user) external view returns (uint256[] memory);
-    function getUnderwriterPoolPledge(address user, uint256 poolId) external view returns (uint256);
+    function getPledge(address user, uint256 poolId) external view returns (uint256);
     function getPoolPayoutData(uint256 poolId)
         external
         view
@@ -32,6 +32,7 @@ interface IUnderwriterManager {
     function getPoolCapitalHeadroom(uint256 poolId) external view returns (uint256 activeCapital, uint256 availableCoverage);
     function getActivePledgeForRewards(address user, uint256 poolId) external view returns (uint256);
     function getTotalCapitalPledgedToPool(uint256 poolId) external view returns (uint256);
+    function isAllocatedToPool(address user, uint256 poolId) external view returns (bool);
 
     // ---- Syndicate interactions ----
     function requestWithdrawal(uint256 amount) external;
@@ -47,6 +48,19 @@ interface IUnderwriterManager {
         bytes32 reservationKey
     ) external returns (uint256 reservedShares);
     function releaseIntentCapital(
+        address underwriter,
+        uint256 poolId,
+        uint256 coverageAmount,
+        bytes32 reservationKey
+    ) external;
+
+    function transitionIntentToPolicy(
+        address underwriter,
+        uint256 poolId,
+        uint256 coverageAmount
+    ) external;
+
+    function releaseSyndicateReservation(
         address underwriter,
         uint256 poolId,
         uint256 coverageAmount,

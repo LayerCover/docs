@@ -32,11 +32,20 @@ interface IPolicyNFT {
         uint256 activationTimestamp,
         uint128 premiumDeposit,
         uint128 lastDrainTime,
-        uint256 claimableFrom
+        uint256 claimableFrom,
+        Types.VaultCoverSnapshot memory vaultCover
     ) external returns (uint256 policyId);
     
     // NEW: A single function to finalize multiple matured increases at once.
     function finalizeIncreases(uint256 policyId, uint256 totalAmountToAdd) external;
+
+    function initializeVaultCover(
+        uint256 policyId,
+        address vault,
+        uint256 sharesInsured,
+        uint256 insuredValueUSDC,
+        uint256 pricePerShareSnapshot
+    ) external;
     
     function burn(uint256 policyId) external;
     function ownerOf(uint256 policyId) external view returns (address);
@@ -52,8 +61,5 @@ interface IPolicyNFT {
         bytes32 reservationKey
     ) external;
     function extendIntentEndTime(uint256 policyId, uint64 newEndTime) external;
-    // REMOVED: These functions are no longer needed as the logic is in PolicyManager
-    // function addPendingIncrease(uint256 policyId, uint256 amount, uint256 activationTimestamp) external;
-    // function finalizeIncrease(uint256 policyId) external;
 }
 ```

@@ -97,4 +97,7 @@ interface ICapitalPool is IERC4626 {
 
     /// @notice Shares reserved for pending payout settlements.
     function unsettledPayoutShares() external view returns (uint256);
+
+    function drawReinsuranceLiquidityAsATokens(address recipient, uint256 amount) external returns (uint256 drawn);
+    function drawStrategyLiquidity(uint256 amount) external returns (uint256 drawn);
 }```

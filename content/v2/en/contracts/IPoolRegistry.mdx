@@ -29,7 +29,7 @@ interface IPoolRegistry {
 
     function isYieldRewardPool(uint256 poolId) external view returns (bool);
 
-    function getPoolRateModel(uint256 poolId) external view returns (Types.RateModel memory);
+
 
     function updateCoverageSold(uint256 poolId, uint256 amount, bool isSale) external;
 
@@ -41,6 +41,10 @@ interface IPoolRegistry {
 
     function setPoolRiskRating(uint256 poolId, Types.RiskRating newRating) external;
 
+    function setPoolUsesVaultCover(uint256 poolId, bool usesVaultCover) external;
+
+    function poolUsesVaultCover(uint256 poolId) external view returns (bool);
+
     function getPoolFeeRecipient(uint256 poolId) external view returns (address);
 
     function getPoolStaticData(uint256 poolId) external view  returns (
@@ -49,19 +53,20 @@ interface IPoolRegistry {
         bool isPaused,
         address feeRecipient,
         uint256 claimFeeBps,
-        Types.RiskRating riskRating
+        Types.RiskRating riskRating,
+        bool useEscrow
     );
 
     function addProtocolRiskPool(
         address protocolTokenToCover,
-        Types.RateModel calldata rateModel,
+
         uint256 claimFeeBps,
         Types.RiskRating riskRating
     ) external returns (uint256);
 
-    function setPoolRateModel(uint256 poolId, Types.RateModel calldata rateModel) external;
 
-    function setPoolRateOverride(uint256 poolId, bool enabled, uint256 overrideRateBps) external;
+
+
 
     function getPoolRiskRating(uint256 poolId) external view returns (Types.RiskRating);
 }

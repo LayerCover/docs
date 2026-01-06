@@ -7,7 +7,7 @@ description: Interface for dynamic pricing logic and risk models.
   View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
 </Callout>
 
-The **IRateEngine** calculates the premium rates for coverage. It uses a dynamic model based on utilization, loss history, and pool-specific configuration parameters.
+The **IRateEngine** provides reference rate calculations and tracks market activity for analytics. In LayerCover's fixed-rate model, underwriters set their own rates when creating quotes—the RateEngine records these trades and provides reference data for dashboards and governance monitoring.
 
 ## Interface
 

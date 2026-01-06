@@ -199,6 +199,7 @@ export function MDXContent({ content }: { content: string }) {
   const hasThemedImage = content.includes('<ThemedImage')
   const hasResponsiveIframe = content.includes('<ResponsiveIframe')
   const hasCallout = content.includes('<Callout')
+  const hasFAQAccordion = content.includes('<FAQAccordion')
 
   // Replace component placeholders with markers
   const externalLinksData: Record<string, ExternalLinkSection[]> = {}
@@ -352,6 +353,37 @@ export function MDXContent({ content }: { content: string }) {
     )
   }
 
+  // Process FAQAccordion components
+  const faqAccordions: FAQ[][] = []
+  if (hasFAQAccordion) {
+    // Remove import statement
+    processedContent = processedContent.replace(
+      /import \{ FAQAccordion \} from ['"]@\/components\/FAQAccordion['"]\s*\n?/g,
+      ''
+    )
+
+    // Parse FAQAccordion components with embedded faqs prop
+    const faqAccordionRegex = /<FAQAccordion\s+faqs=\{(\[[\s\S]*?\])\}\s*\/>/g
+    let faqMatch
+    while ((faqMatch = faqAccordionRegex.exec(processedContent)) !== null) {
+      try {
+        // Parse the faqs array
+        // eslint-disable-next-line no-new-func
+        const parsed = new Function(`return (${faqMatch[1]})`)()
+        faqAccordions.push(Array.isArray(parsed) ? parsed : [])
+      } catch (e) {
+        console.warn('Failed to parse FAQAccordion faqs:', e)
+        faqAccordions.push([])
+      }
+    }
+
+    let counter = 0
+    processedContent = processedContent.replace(
+      faqAccordionRegex,
+      () => `<!-- FAQ_ACCORDION_${counter++} -->`
+    )
+  }
+
   if (externalLinksVarNames.size > 0) {
     processedContent = processedContent.replace(
       /import \{ ExternalLinks \} from ['"]@\/components\/ExternalLinks['"]\s*\n?/g,
@@ -400,7 +432,7 @@ export function MDXContent({ content }: { content: string }) {
   const hasFAQs = faqs.length > 0
 
   const placeholderRegex =
-    /(<!-- CONTRACT_ADDRESSES -->|<!-- POOL_PARAMETERS -->|<!-- THEMED_IMAGE_\d+ -->|<!-- RESPONSIVE_IFRAME_\d+ -->|<!-- LAYERCOVER_ANIMATION -->|<!-- EXTERNAL_LINKS_[A-Za-z0-9_$]+ -->|<!-- CALLOUT_\d+ -->)/
+    /(<!-- CONTRACT_ADDRESSES -->|<!-- POOL_PARAMETERS -->|<!-- THEMED_IMAGE_\d+ -->|<!-- RESPONSIVE_IFRAME_\d+ -->|<!-- LAYERCOVER_ANIMATION -->|<!-- EXTERNAL_LINKS_[A-Za-z0-9_$]+ -->|<!-- CALLOUT_\d+ -->|<!-- FAQ_ACCORDION_\d+ -->)/
   const introductionSegments = beforeFAQ.split(placeholderRegex).filter((segment) => segment !== '')
 
   return (
@@ -490,6 +522,19 @@ export function MDXContent({ content }: { content: string }) {
                     {props.content}
                   </ReactMarkdown>
                 </Callout>
+              )
+            }
+          }
+
+          const faqAccordionMatch = segment.match(/<!-- FAQ_ACCORDION_(\d+) -->/)
+          if (faqAccordionMatch) {
+            const faqIndex = parseInt(faqAccordionMatch[1], 10)
+            const faqList = faqAccordions[faqIndex]
+            if (faqList && faqList.length > 0) {
+              return (
+                <div key={`faq-accordion-${index}`} className="my-6">
+                  <FAQAccordion faqs={faqList} />
+                </div>
               )
             }
           }

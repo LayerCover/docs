@@ -59,7 +59,7 @@ The Reinsurance Layer is not a monolith; it is structured into **Tranche Vaults*
 The Reinsurance Layer activates strictly based on **Solvency Shortfalls**. It does not compete with primary underwriters; it supports them.
 
 1.  **Primary First:** When a claim is validated, the protocol first attempts to settle it using the specific Risk Pool's pledged capital.
-2.  **Shortfall Detection:** If the primary pool lacks sufficient liquid capital (e.g., due to heavy utilization or pending withdrawals), a **Solvency Shortfall** is detected.
+2.  **Shortfall Detection:** If the primary pool lacks sufficient liquid capital (e.g., due to heavy allocation or pending withdrawals), a **Solvency Shortfall** is detected.
 3.  **Automatic Drawdown:** The Shared Asset Controller instantly unlocks the required funds from the Backstop tranches (Junior $\to$ Senior) to fill the gap.
 
 This ensures that policyholders receive full payouts without delay, even if the specific pool they bought into is temporarily stressed.

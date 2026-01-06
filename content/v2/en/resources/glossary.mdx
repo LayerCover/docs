@@ -40,10 +40,8 @@ A comprehensive reference for all terms and concepts used throughout LayerCover 
 
 | Term | Definition |
 |------|------------|
-| **Pool** | A grouping of insurance policies covering a specific protocol or risk type (e.g., “Aave USDC”). Each pool has unique parameters and a rate model. |
-| **Pool Utilization** | The percentage of available capital sold as coverage. Formula: `Utilization = Coverage Sold / Total Capital Available`. Higher utilization usually increases premium rates. |
-| **Premium Rate** | The annual cost of coverage expressed as APR. Rates are dynamically calculated from pool utilization and the pool’s rate model. |
-| **Rate Model** | A utilization-based curve that sets premium rates. Key parameters include: <ul><li><strong>Base Rate</strong>: Minimum rate at 0% utilization</li><li><strong>Kink</strong>: Utilization level where the curve steepens</li><li><strong>Slope 1</strong>: Rate increase below the kink</li><li><strong>Slope 2</strong>: Accelerated increase above the kink</li></ul> |
+| **Pool** | A grouping of insurance policies covering a specific protocol or risk type (e.g., "Aave USDC"). Each pool has unique parameters that define coverage terms. |
+| **Premium Rate** | The annual cost of coverage expressed as APR. In LayerCover's fixed-rate model, rates are set by underwriters when they create quotes in the orderbook. |
 | **Risk Rating** | Letter grade (e.g., A, B, C) classifying pool risk. Higher risk ratings require more risk points to allocate capital, limiting exposure. |
 | **Mutex Group** | A set of pools that cannot be allocated simultaneously. Prevents concentration risk by forcing underwriters to choose one pool per group. |
 
@@ -129,7 +127,7 @@ A comprehensive reference for all terms and concepts used throughout LayerCover 
 | **ERC-4626** | Tokenized vault standard used by CapitalPool, Syndicates, and Tranche Vaults, providing a common interface for deposits, withdrawals, and accounting. |
 | **ERC-721 (NFT)** | Non-fungible token standard where each policy is a unique token that can be transferred, traded, or pledged as collateral. |
 | **Basis Points (BPS)** | Unit that expresses percentages in hundredths of a percent; 100 bps equals 1%, so a 500 bps fee equals 5%. |
-| **Slippage** | Difference between expected and actual execution outcomes when a transaction processes, often driven by utilization changes or market moves. |
+| **Slippage** | Difference between expected and actual execution outcomes when a transaction processes, often driven by price changes or market moves. |
 | **Revert** | Transaction failure that rolls back all state changes because validation failed, balances were insufficient, or another error occurred. |
 | **Gas Optimization** | Techniques that reduce transaction costs, such as batching operations, minimizing storage writes, and avoiding unnecessary external calls. |
 
@@ -143,7 +141,7 @@ A comprehensive reference for all terms and concepts used throughout LayerCover 
 | **Burn** | Destruction of tokens, typically happening when shares are redeemed during withdrawals or policies are closed after claims. |
 | **Settle** | Automatic process that applies pending rewards, fees, and losses to bring account balances up to date during an interaction. |
 | **Harvest** | Action that pulls accumulated yield from external protocols (Aave, Compound, etc.) back into the CapitalPool for distribution. |
-| **Rebalance** | Adjustment of capital allocations across pools to maintain a target strategy, respond to utilization changes, or manage risk. |
+| **Rebalance** | Adjustment of capital allocations across pools to maintain a target strategy, respond to market changes, or manage risk. |
 | **Sweep** | Retrieval of unclaimed salvage after a grace period expires, allowing governance to redistribute or allocate the recovered assets. |
 
 ---
@@ -187,7 +185,6 @@ A comprehensive reference for all terms and concepts used throughout LayerCover 
 | Term | Definition |
 |------|------------|
 | **Pro-Rata** | Distribution method that allocates amounts proportional to each participant’s share of the total, used for salvage, losses, and rewards. |
-| **Utilization Rate** | Metric calculated as `Coverage Sold / Available Capital`, showing how much pool capacity backs active policies. |
 | **Share Price** | For ERC-4626 vaults, `Total Assets / Total Shares`; rises with premiums and yield, falls when losses occur. |
 | **APY (Annual Percentage Yield)** | Yearly return measure that includes compounding, commonly used to present underwriting yields. |
 | **APR (Annual Percentage Rate)** | Yearly rate without compounding, typically used to quote policy premium rates. |

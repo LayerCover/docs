@@ -38,6 +38,7 @@ interface IYieldStrategyManager {
     function withdrawFromAdapter(address adapterAddress, uint256 amount, address recipient)
         external
         returns (uint256 withdrawn);
+    function withdrawLiquidity(uint256 amount, address recipient) external returns (uint256 withdrawn);
     function syncAdapterEmergencyTransfer(address adapter, uint256 valueLost, bool markFailed) external;
     function recordLoss(address user, uint256 burnShares, uint256 userShareBalanceBefore)
         external

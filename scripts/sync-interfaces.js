@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const DOCS_DIR = path.join(__dirname, '../content/v2/en/contracts');
-const INTERFACES_DIR = path.join(__dirname, '../../contracts/contracts/interfaces');
+const INTERFACES_DIR = path.join(__dirname, '../../monorepo/packages/contracts/contracts/interfaces');
 
 function syncInterfaces() {
     console.log('Starting interface synchronization...');

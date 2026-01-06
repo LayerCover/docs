@@ -16,6 +16,7 @@ The **IRiskManager** is responsible for the "risk" side of the protocol. It hand
 pragma solidity ^0.8.20;
 
 import "./IPoolRegistry.sol";
+import "./IRMSalvageManager.sol";
 
 interface IRiskManager {
     function reportIncident(uint256 _poolId, bool _pauseState, uint256 incidentBlock) external;
@@ -23,13 +24,13 @@ interface IRiskManager {
     function setCommittee(address _newCommittee) external;
     function setIncidentUnderwriterNoticePeriod(uint256 newPeriod) external;
     function setPayoutManager(address _payoutManager) external;
-    function setInsuredWithdrawRouter(address router) external;
     function setClaimSenderBlacklist(address sender, bool blacklisted) external;
     function claimSenderBlacklist(address sender) external view returns (bool);
     function updateCoverageSold(uint256 poolId, uint256 amount, bool isSale) external;
     function poolRegistry() external view returns (IPoolRegistry);
 
     // Token-based salvage claims
+    function salvageManager() external view returns (IRMSalvageManager);
     function claimSalvage(uint256 policyId) external;
     function getSalvageInfo(uint256 policyId)
         external view returns (

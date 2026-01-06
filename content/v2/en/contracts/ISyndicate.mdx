@@ -73,6 +73,7 @@ interface ISyndicate {
 
     // Salvage claims (permissionless)
     function setSalvageManager(address manager) external;
+    function claimEscrowShare(uint256 policyId) external;
     function claimSalvage(uint256 policyId) external;
     function claimSalvageBatch(uint256[] calldata policyIds) external returns (uint256 successCount);
     function distributeSalvage(address salvageToken) external;

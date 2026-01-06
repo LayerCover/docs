@@ -78,13 +78,13 @@ Governance typically sets these limits conservatively at launch and gradually in
 
 ## Premium & Fee Parameters
 
-### Premium Rate Curves
+### Fixed-Rate Pricing
 
-Premium pricing in LayerCover isn't static—it responds dynamically to supply and demand through rate curves. These curves determine how premiums change as a pool's utilization increases. When a pool has abundant available capital and low utilization, premiums remain relatively affordable. As more policyholders purchase coverage and utilization rises, premiums increase to signal underwriters that more capital is needed.
+LayerCover uses a fixed-rate pricing model where underwriters set their own premium rates when creating quotes in the orderbook. This approach gives policyholders predictable, transparent pricing—the rate you see is the rate you pay for the entire policy duration.
 
-The steepness of these curves matters significantly. Steeper curves cause premiums to rise rapidly with utilization, creating strong price signals that help the protocol quickly find equilibrium between supply and demand. This responsiveness helps maintain proper capitalization but can make pricing less predictable for policyholders, especially during periods of high demand.
+Underwriters compete on price by posting quotes with different rates. Market dynamics naturally drive rates toward equilibrium: if rates are too high, coverage goes unsold; if rates are too low, underwriter capital quickly fills up. This creates efficient price discovery without complex algorithmic curves.
 
-Flatter curves provide more pricing stability, making it easier for users to budget for coverage and understand costs over time. However, this stability comes at the expense of responsiveness—the protocol adjusts more slowly to imbalances between capital supply and coverage demand, potentially allowing unsustainable situations to persist longer.
+Governance sets guardrails around acceptable rate ranges to prevent manipulation or extreme pricing. These bounds ensure rates remain reasonable while still allowing underwriters flexibility to price risk according to their assessment.
 
 ### Claim Processing Fees
 
