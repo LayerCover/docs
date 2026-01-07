@@ -15,10 +15,63 @@ The **ISyndicate** interface defines the interactions for a Syndicate vault. Syn
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import {Types} from "../libraries/helpers/Types.sol";
 
-interface ISyndicate {
-    // Initialization (called once by factory/owner)
+/**
+ * @title ISyndicate
+ * @notice Unified interface for Syndicate vaults - includes vault operations, intent reservations, and snapshots
+ */
+interface ISyndicate is IERC4626 {
+    
+    /* =============================
+       ===== Reservation Types =====
+       ============================= */
+
+    enum ReservationState {
+        None,
+        Pending,
+        Finalized,
+        Cancelled,
+        Completed,
+        Expired
+    }
+
+    struct ReserveIntent {
+        address solver;
+        address underwriter;
+        uint256 poolId;
+        uint32 minCoverageDuration;
+        uint32 maxCoverageDuration;
+        uint256 coverageAmount;
+        uint256 minFillAmount;
+        bool allowPartialFill;
+        uint64 reservationExpiry;
+        uint96 nonce;
+        address whitelistedBuyer;
+        bool autoAllocate;
+        uint16 cancellationPenaltyBps;
+    }
+
+    struct ReservationView {
+        address solver;
+        uint256 poolId;
+        uint32 minCoverageDuration;
+        uint32 maxCoverageDuration;
+        uint256 coverageAmount;
+        uint256 minFillAmount;
+        bool allowPartialFill;
+        uint64 expiryTimestamp;
+        uint128 shares;
+        uint96 nonce;
+        address whitelistedBuyer;
+        ReservationState state;
+    }
+
+    /* =============================
+       ===== Initialization =====
+       ============================= */
+
     function initialize(
         address asset_,
         address capitalPool_,
@@ -32,79 +85,69 @@ interface ISyndicate {
         string calldata name_,
         string calldata symbol_,
         address initialOwner_,
-        address operationsDelegate_,
-        address salvageDelegate_,
-        address intentDelegate_
+        address strategy_,
+        address salvage_
     ) external;
 
-    // User vault interactions (ERC4626 compatible)
-    function deposit(uint256 assets, address receiver) external returns (uint256 shares);
-    function depositWithWithdrawalIntent(uint256 assets, address receiver, uint32 delayDays)
-        external
-        returns (uint256 shares, uint256 requestId, uint256 assetsPreview);
-    function mint(uint256 shares, address receiver) external returns (uint256 assets);
-    function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares);
-    function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets);
-    function totalAssets() external view returns (uint256);
+    /* =============================
+       ===== Vault Operations =====
+       ============================= */
+
     function idleAssets() external view returns (uint256);
     function pendingPerformanceFees() external view returns (uint256);
-    function getWeeklyCapacity(uint32 maxWeeks) external view returns (uint256[] memory capacities);
-    function getUserMaxWithdraw(address user) external view returns (uint256);
-
-    // Manager actions (onlyManager)
-    function depositIntoCapital(uint256 amount, Types.YieldPlatform yieldChoice) external;
-    function depositAndAllocate(
-        uint256 amount,
-        Types.YieldPlatform yieldChoice,
-        uint256[] calldata poolIds,
-        uint256[] calldata amounts
-    ) external;
-    function allocateToPools(uint256[] calldata poolIds, uint256[] calldata amounts) external;
-    function cancelDeallocation(uint256 poolId, uint256 amountToRelease) external;
-    function executeWithdrawal(uint256 shares, address receiver) external returns (uint256 assets);
-
-    // Deallocation actions (PERMISSIONLESS - anyone can call)
-    function requestDeallocateFromPool(uint256 poolId, uint256 amount) external;
-    function executeDeallocation(uint256 poolId) external;
-
-    // Fee controls
+    function deallocateFromPool(uint256 poolId) external;
     function chargePerformanceFees() external;
     function withdrawPerformanceFees(uint256 amount) external;
 
-    // Salvage claims (permissionless)
+    /* =============================
+       ===== Intent Reservations =====
+       ============================= */
+
+    function intentMatcher() external view returns (address);
+    function reserveIntent(ReserveIntent calldata intent, bytes calldata solverSignature) external returns (bytes32 key);
+    function cancelReservation(bytes32 key) external;
+    function expireReservation(bytes32 key) external;
+    function consumeReservation(bytes32 key, uint256 poolId, uint256 coverageAmount, uint32 coverageDuration) external returns (uint256 reservedShares);
+    function releaseReservation(bytes32 key, uint256 coverageAmount) external returns (uint256 releasedShares);
+    function getReservation(bytes32 key) external view returns (ReservationView memory);
+    function minUnderwritingDuration() external view returns (uint32);
+    function minRemainingLock(address account) external view returns (uint64 timestamp);
+    function reserveNonces(address solver) external view returns (uint96);
+    function allocateFromStrategy(uint256 poolId, uint256 amount, uint32 coverageDuration) external;
+    function isAllocatedToPool(uint256 poolId) external view returns (bool);
+
+    /* =============================
+       ===== Salvage Claims =====
+       ============================= */
+
     function setSalvageManager(address manager) external;
-    function claimEscrowShare(uint256 policyId) external;
-    function claimSalvage(uint256 policyId) external;
-    function claimSalvageBatch(uint256[] calldata policyIds) external returns (uint256 successCount);
-    function distributeSalvage(address salvageToken) external;
+    function claimSalvage(uint256[] calldata policyIds) external returns (uint256 successCount);
     function distributeSalvage(address salvageToken, uint256 maxRounds) external;
     function initializeSalvageSnapshot(address salvageToken) external;
     function snapshotForSalvage() external returns (uint256 snapshotId);
-
-    // Salvage views
-    function getClaimableSalvageForPool(uint256 poolId, uint256 offset, uint256 limit)
-        external view returns (uint256[] memory policyIds, uint256[] memory amounts, address[] memory assets);
+    function getClaimableSalvageForPool(uint256 poolId, uint256 offset, uint256 limit) external view returns (uint256[] memory policyIds, uint256[] memory amounts, address[] memory assets);
     function getSalvageTokens() external view returns (address[] memory);
     function getUserClaimableSalvage(address user, address salvageToken) external view returns (uint256);
-    function getUserSalvagePositions(address user, uint256 offset, uint256 limit)
-        external
-        view
-        returns (address[] memory tokens, uint256[] memory amounts);
+    function getUserSalvagePositions(address user, uint256 offset, uint256 limit) external view returns (address[] memory tokens, uint256[] memory amounts);
     function getSalvageBalance(address salvageToken) external view returns (uint256);
     function getPendingSalvage(address salvageToken) external view returns (uint256);
-    function getSalvageSupplySnapshot(address salvageToken) external view returns (uint256);
     function getSalvageSnapshotId(address salvageToken) external view returns (uint256);
 
-    // Misc views
-    function reserveNonces(address solver) external view returns (uint96);
-    function isValidSignature(bytes32 hash, bytes memory signature) external view returns (bytes4);
+    /* =============================
+       ===== Snapshot Support =====
+       ============================= */
 
-    // Administration
-    function setOperationsDelegate(address newDelegate) external;
-    function setSalvageDelegate(address newDelegate) external;
-    function setIntentDelegate(address newDelegate) external;
+    function balanceOfAt(address account, uint256 snapshotId) external view returns (uint256);
+    function totalSupplyAt(uint256 snapshotId) external view returns (uint256);
+
+    /* =============================
+       ===== Misc & Admin =====
+       ============================= */
+
+    function isValidSignature(bytes32 hash, bytes memory signature) external view returns (bytes4);
+    function setSyndicateStrategy(address newStrategy) external;
+    function setSyndicateSalvage(address newSalvage) external;
     function pause() external;
     function unpause() external;
-    function autoAllocateExternal() external;
 }
 ```

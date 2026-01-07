@@ -21,18 +21,16 @@ import {Types} from "../libraries/helpers/Types.sol";
 interface IPolicyManager {
     function policyNFT() external view returns (IPolicyNFT);
     function isPolicyActive(uint256 policyId) external view returns (bool);
-    // clearIncreasesAndGetPendingAmount removed
-    // getPendingIncreases removed
     function setCatPool(address catPoolAddress) external;
     function setCatPremiumShareBps(uint256 newBps) external;
     function setCoverCooldownPeriod(uint256 newPeriod) external;
     function setClaimLockPeriod(uint256 newPeriod) external;
-    function setStakingContract(address newStakingContract) external;
     function setReserveFactor(uint256 newBps) external;
 
     function settlePremiumForClaim(uint256 policyId) external returns (bool);
     function forceVoidPolicy(uint256 policyId, uint256 incidentBlock) external;
     function catPremiumBps() external view returns (uint16);
+
     function purchaseCoverageViaIntent(
         address buyer,
         uint256 poolId,
@@ -43,7 +41,8 @@ interface IPolicyManager {
         uint256 duration,
         bool requiresUpfront,
         bytes32 reservationKey,
-        bytes32 referralCode
+        bytes32 referralCode,
+        uint16 cancellationPenaltyBps
     ) external returns (uint256 policyId);
 
     function purchaseVaultCoverageViaIntent(
@@ -57,12 +56,10 @@ interface IPolicyManager {
         uint256 duration,
         bool requiresUpfront,
         bytes32 reservationKey,
-        bytes32 referralCode
+        bytes32 referralCode,
+        uint16 cancellationPenaltyBps
     ) external returns (uint256 policyId);
 
-
-
-    // addPremium removed - variable-rate policies are deprecated
     function cancelCover(uint256 policyId) external;
 
     function setIntentMatcher(address matcher) external;

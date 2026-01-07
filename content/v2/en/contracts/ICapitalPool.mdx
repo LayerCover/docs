@@ -7,7 +7,7 @@ description: Interface for the CapitalPool, the secure vault for idle assets.
   View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
 </Callout>
 
-The **ICapitalPool** is the underlying vault where idle assets are held when they are not deployed to an external yield strategy. It serves as the "custody" layer for the protocol.
+The **ICapitalPool** is the underlying vault where idle assets are held when they are not deployed to an external yield strategy. It serves as the "custody" layer for the protocol and provides coordination functions for payout settlement.
 
 ## Interface
 
@@ -19,13 +19,15 @@ import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Types} from "../libraries/helpers/Types.sol";
 
+/**
+ * @title ICapitalPool
+ * @notice Unified interface for CapitalPool - includes both public API and coordination functions
+ */
 interface ICapitalPool is IERC4626 {
     /* =========================
        ===== Admin / Config =====
        ========================= */
 
-    function setUnderwriterNoticePeriod(uint256 newPeriod) external;
-    function setUnderwriterNoticePeriodFromRiskManager(uint256 newPeriod) external;
     function setPayoutManager(address _payoutManager) external;
     function configureReinsurance(address controller, uint256 bufferBps, uint256 maxDrawPerCall) external;
     function setYieldAdapterRewardPool(address adapterAddress, uint256 rewardPoolId) external;
@@ -40,18 +42,11 @@ interface ICapitalPool is IERC4626 {
     /// @notice UM deposits on behalf of a user and sets/uses their adapter choice.
     function depositFor(address user, uint256 amount, Types.YieldPlatform yieldChoice) external;
 
-    /// @notice Notice-queue management (invoked by UnderwriterManager).
-    function requestWithdrawal(address user, uint256 sharesToBurn) external;
-    function cancelWithdrawalRequest(address user, uint256 requestIndex) external;
-    function executeWithdrawal(address user, uint256 requestIndex) external;
-    function executeWithdrawalPartial(address user, uint256 requestIndex, uint256 maxAmountValue) external;
-    function underwriterNoticePeriod() external view returns (uint256);
-
     /* ==========================
        ===== Risk Operations =====
        ========================== */
 
-    /// @notice LossDistributor burns shares to realize losses; principal is scaled accordingly.
+    /// @notice Burns shares from an underwriter during loss charging
     function burnSharesForLoss(address underwriter, uint256 burnAmount) external;
 
     /// @notice Harvest strategy yield from an adapter and distribute via RewardDistributor.
@@ -69,35 +64,53 @@ interface ICapitalPool is IERC4626 {
         returns (
             uint256 currentValue,
             Types.YieldPlatform yieldChoice,
-            uint256 masterShares,
-            uint256 pendingWithdrawalShares
+            uint256 masterShares
         );
 
     /// @notice Principal tracked for pledge scaling in UM.
     function getUnderwriterPrincipal(address underwriter) external view returns (uint256);
 
-    /// @notice Withdrawal request views (for UIs/UM logic).
-    function getWithdrawalRequestCount(address underwriter) external view returns (uint256);
-    function getUserWithdrawalRequests(address underwriter)
-        external
-        view
-        returns (uint256[] memory shares, uint256[] memory unlockTimestamps);
-    function getMaturedWithdrawalRequests(address underwriter)
-        external
-        view
-        returns (uint256[] memory shares, uint256[] memory unlockTimestamps);
-    function getMaturedWithdrawalShares(address underwriter) external view returns (uint256);
-    function getMaturedWithdrawalValue(address underwriter) external view returns (uint256);
-
-    /// @notice Next upcoming unlock for convenience.
-    function getNextWithdrawalUnlock(address underwriter)
-        external
-        view
-        returns (bool exists, uint256 unlockTimestamp, uint256 shares);
-
     /// @notice Shares reserved for pending payout settlements.
     function unsettledPayoutShares() external view returns (uint256);
 
-    function drawReinsuranceLiquidityAsATokens(address recipient, uint256 amount) external returns (uint256 drawn);
+    /// @notice Transfers vault shares to a recipient for payout coverage
+    function transferSharesForPayout(address recipient, uint256 shares) external returns (uint256 transferred);
+    
+    /// @notice Withdraws uncommitted liquidity from yield adapters
     function drawStrategyLiquidity(uint256 amount) external returns (uint256 drawn);
-}```
+
+    /* =====================================
+       ===== Coordination (PayoutManager) =====
+       ===================================== */
+
+    /// @notice Gets the idle balance available for immediate payout
+    function getAvailableLiquidity() external view returns (uint256 balance);
+
+    /// @notice Gets principal deposited in a specific adapter
+    function getPrincipalInAdapter(address adapter) external view returns (uint256 principal);
+
+    /// @notice Withdraws capital from a specific adapter for payout (soft-fail)
+    function withdrawFromAdapter(address adapter, uint256 amount) external returns (uint256 withdrawn);
+
+    /// @notice Withdraws idle capital from the CapitalPool (soft-fail)
+    function withdrawIdle(uint256 amount) external returns (uint256 withdrawn);
+
+    /// @notice Records that value was pulled from an adapter outside the normal withdraw flow
+    function syncAdapterEmergencyTransfer(address adapter, uint256 valueLost, bool markFailed) external;
+
+    /// @notice Records payout execution and updates unsettled shares
+    function recordPayoutExecution(uint256 payoutShares) external;
+
+    /// @notice Ensures enough idle liquidity exists by optionally drawing from reinsurance
+    function ensureLiquidity(uint256 requiredAmount) external returns (uint256 drawn);
+
+    /// @notice Draws reinsurance liquidity directly to the caller (PayoutManager)
+    function drawReinsuranceLiquidity(uint256 amount) external returns (uint256 drawn);
+
+    /// @notice Checks if an adapter has failed
+    function isAdapterFailed(address adapter) external view returns (bool failed);
+
+    /// @notice Checks if adapter routing is enabled (not in emergency mode)
+    function adapterRoutingEnabled() external view returns (bool enabled);
+}
+```

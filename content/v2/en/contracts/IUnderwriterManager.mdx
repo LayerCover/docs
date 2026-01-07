@@ -17,8 +17,15 @@ pragma solidity ^0.8.20;
 
 import {Types} from "../libraries/helpers/Types.sol";
 
+/**
+ * @title IUnderwriterManager
+ * @notice Unified interface for UnderwriterManager - includes both public API and coordination functions
+ */
 interface IUnderwriterManager {
-    // ---- Views ----
+    /* =============================
+       ===== Views (Public API) =====
+       ============================= */
+    
     function poolAllocationManager() external view returns (address);
     function intentMatcher() external view returns (address);
     function getUnderwriterAllocations(address user) external view returns (uint256[] memory);
@@ -34,12 +41,10 @@ interface IUnderwriterManager {
     function getTotalCapitalPledgedToPool(uint256 poolId) external view returns (uint256);
     function isAllocatedToPool(address user, uint256 poolId) external view returns (bool);
 
-    // ---- Syndicate interactions ----
-    function requestWithdrawal(uint256 amount) external;
-    function executeWithdrawal(uint256 requestIndex, uint256 amountValue) external;
-    function cancelWithdrawal(uint256 requestIndex) external;
-
-    // ---- Intent matcher hooks ----
+    /* ================================
+       ===== Intent Matcher Hooks =====
+       ================================ */
+    
     function allocateIntentCapital(
         address underwriter,
         uint256 poolId,
@@ -47,6 +52,7 @@ interface IUnderwriterManager {
         uint32 coverageDuration,
         bytes32 reservationKey
     ) external returns (uint256 reservedShares);
+    
     function releaseIntentCapital(
         address underwriter,
         uint256 poolId,
@@ -62,24 +68,29 @@ interface IUnderwriterManager {
 
     function releaseSyndicateReservation(
         address underwriter,
-        uint256 poolId,
         uint256 coverageAmount,
         bytes32 reservationKey
     ) external;
 
-    // ---- Hooks from CapitalPool / system ----
+    /* ======================================
+       ===== Hooks from CapitalPool/System =====
+       ====================================== */
+    
     function onCapitalDeposited(address underwriter, uint256 amount) external;
-    function onWithdrawalRequested(address underwriter, uint256 principalComponent) external;
     function onCapitalWithdrawn(address underwriter, uint256 principalComponentRemoved, bool isFullWithdrawal) external;
     function onLossRealized(address underwriter, uint256 principalComponentReduced) external;
 
-    // ---- Helper contract addresses ----
+    /* ====================================
+       ===== Helper Contract Addresses =====
+       ==================================== */
+    
     function getIntentAllocationsContract() external view returns (address);
 
-    // function getPoolUnderwritersPaginated(uint256 poolId, uint256 cursor, uint256 limit) external view returns (address[] memory underwriters_, uint256 nextCursor); 
-    // ---- Admin ----
+    /* ====================
+       ===== Admin =====
+       ==================== */
+    
     function setMaxAllocationsPerUnderwriter(uint256 _newMax) external;
-    function setDeallocationNoticePeriod(uint256 _newPeriod) external;
     function setPoolMutexGroup(uint256[] calldata poolIds, uint256 groupId) external;
     function setSyndicateFactory(address _syndicateFactory) external;
     function setPoolAllocationManager(address _poolAllocationManager) external;
@@ -88,11 +99,72 @@ interface IUnderwriterManager {
     function setIntentOrderBook(address orderBook) external;
     function setSyndicateDepositCap(address syndicate, uint256 cap) external;
 
-    // ---- New pull-based loss settlement ----
-    function settlePendingLosses() external;
-    function settlePendingLossesFor(address user) external;  // RiskManager-triggered
+    /* =========================================
+       ===== Coordination (PoolAllocationManager) =====
+       ========================================= */
 
-    function getPoolTotalAtBlock(uint256 poolId, uint256 blockNumber) external view returns (uint256);
-    function getPledgeAtBlock(address user, uint256 poolId, uint256 blockNumber) external view returns (uint256);
+    /// @notice Validates pool allocation constraints (risk points, mutex groups, allocation limits)
+    function validatePoolAllocation(
+        address underwriter,
+        uint256[] memory poolIds,
+        uint256[] memory amounts
+    ) external view;
+
+    /// @notice Records a new pool allocation in shared state
+    function recordPoolAllocation(
+        address underwriter,
+        uint256 poolId,
+        uint256 amount,
+        address adapter
+    ) external;
+
+    /// @notice Records a pool deallocation in shared state
+    function recordPoolDeallocation(
+        address underwriter,
+        uint256 poolId,
+        uint256 deallocAmount,
+        uint256 newPledge,
+        address adapter
+    ) external;
+
+    /// @notice Pulls assets from the underwriter and deposits them into the CapitalPool
+    function depositForUnderwriter(
+        address underwriter,
+        uint256 amount,
+        Types.YieldPlatform yieldChoice
+    ) external;
+
+    /// @notice Removes underwriter from pool tracking completely
+    function removeUnderwriterFromPool(address underwriter, uint256 poolId) external;
+
+    /// @notice Settles rewards for a specific pool with exact time cut
+    function settleRewardsSingleCut(
+        address user,
+        uint256 poolId,
+        uint256 basePledge,
+        uint48 cutTime,
+        uint256 postCutPledge
+    ) external;
+
+    /// @notice Settles all rewards for a user across all pools
+    function settleAllUserRewards(address user) external;
+
+    /// @notice Gets user's available capital in a pool (pledge - locked - reserved)
+    function getAvailableCapital(address user, uint256 poolId) external view returns (uint256);
+
+    /// @notice Gets risk points used by a user
+    function getUnderwriterRiskPointsUsed(address user) external view returns (uint256);
+
+    /// @notice Gets CapitalPool address
+    function getCapitalPool() external view returns (address);
+
+    /// @notice Gets PoolRegistry address
+    function getPoolRegistry() external view returns (address);
+
+    /// @notice Gets RewardDistributor address
+    function getRewardDistributor() external view returns (address);
+
+    /// @notice Gets max allocations per underwriter
+    function getMaxAllocationsPerUnderwriter() external view returns (uint256);
 }
 ```

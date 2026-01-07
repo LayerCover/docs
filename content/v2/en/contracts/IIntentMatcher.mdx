@@ -106,26 +106,19 @@ interface IIntentMatcher {
     // ==================== Functions ====================
 
     /**
-     * @notice Executes a matched intent pair (off-chain matching, on-chain settlement)
+     * @notice Execute one or more matched intents to create coverage policies
+     * @dev For single intent execution, pass arrays of length 1
      */
     function executeMatchedIntent(
-        CoverageIntent calldata intent,
-        bytes calldata intentSignature,
-        CoverageBuyOrder calldata order,
-        bytes calldata orderSignature,
-        uint256 fillAmount,
-        ReserveIntent calldata reserveIntent,
-        bytes calldata reserveSignature
-    ) external returns (uint256 policyId);
-
-    function executeMatchedIntentBatch(
         CoverageIntent[] calldata intents,
         bytes[] calldata intentSignatures,
         CoverageBuyOrder calldata order,
         bytes calldata orderSignature,
         uint256[] calldata fillAmounts,
         ReserveIntent[] calldata reserveIntents,
-        bytes[] calldata reserveSignatures
+        bytes[] calldata reserveSignatures,
+        address vault,
+        uint256 sharesToCover
     ) external returns (uint256[] memory policyIds);
 
     /**
