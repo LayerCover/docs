@@ -401,7 +401,6 @@ function flattenSidebarItems(items: SidebarItem[], breadcrumbs: string[] = []): 
 }
 
 export function Sidebar({ items, variant = 'default', onNavigate }: SidebarProps) {
-  console.log('Sidebar rendering', { variant, itemsCount: items?.length });
   const pathname = usePathname()
   const normalizedPath = pathname ? stripVersionPrefix(pathname) : '/'
 
