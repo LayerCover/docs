@@ -37,11 +37,11 @@ flowchart TD
 
 ### Incident-Based Claims
 
-Used by most pools. You can file a claim at any time, but in practice you'll want to wait until a **Risk Committee member reports the incident** - since claiming requires surrendering your tokens as salvage and paying a claim fee, it only makes economic sense once the covered event has actually occurred.
+Used by most pools. Claims are **fully permissionless** — you can file at any time by swapping your covered asset for the underwriter's asset, even before any committee has formally recognised the incident. In practice, claiming only makes economic sense once the covered event has actually occurred, since it requires surrendering your tokens as salvage and paying a claim fee.
 
 **Step-by-step:**
 
-1. **Incident occurs** - The RiskManager reports the incident affecting your pool (this is your signal to act)
+1. **Incident occurs** - You notice the covered event has happened (e.g., a depeg or vault exploit)
 2. **Go to Dashboard** - Navigate to your active policy and click **File Claim**
 3. **Transfer your asset** - Send the distressed tokens (e.g., depegged USDC) to the protocol
 4. **Receive payout** - USDC is sent instantly to your wallet in the same transaction
