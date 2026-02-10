@@ -190,11 +190,11 @@ export function DocSearch() {
                                             ))}
                                         </ul>
                                     ) : query ? (
-                                        <p className="py-8 text-center text-muted-foreground">No results found for "{query}"</p>
+                                        <p className="py-8 text-center text-muted-foreground">No results found for &quot;{query}&quot;</p>
                                     ) : (
                                         <div className="py-8 text-center text-muted-foreground">
                                             <p className="mb-2">Start typing to search...</p>
-                                            <p className="text-xs">Try: "claims", "syndicate", "salvage"</p>
+                                            <p className="text-xs">Try: &quot;claims&quot;, &quot;syndicate&quot;, &quot;salvage&quot;</p>
                                         </div>
                                     )}
                                 </div>

@@ -11,7 +11,7 @@
 const fs = require('fs')
 const path = require('path')
 
-const CONTRACTS_DIR = path.resolve(__dirname, '../../contracts/deployments/base_sepolia')
+const CONTRACTS_DIR = path.resolve(__dirname, '../lib/contracts/deployments/base_sepolia')
 const TARGET_FILE = path.resolve(__dirname, '../components/ContractAddresses.tsx')
 
 // Deployment JSON files to merge (order matters — later files override)

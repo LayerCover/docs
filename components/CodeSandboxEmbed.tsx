@@ -36,7 +36,6 @@ export function CodeSandboxEmbed({
                     Open in new tab ↗
                 </a>
             </div>
-            {/* eslint-disable-next-line react-dom/no-unsafe-inline-style */}
             <div className="relative w-full" style={{ height }}>
                 {!loaded && (
                     <div className="absolute inset-0 flex items-center justify-center bg-muted">

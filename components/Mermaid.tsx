@@ -68,7 +68,6 @@ export function Mermaid({ chart }: { chart: string }) {
         })
 
         const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`
-        // @ts-ignore - mermaid types might be slightly off for render param
         const { svg } = await mermaid.render(id, chart)
         setSvg(svg)
       } catch (error) {
