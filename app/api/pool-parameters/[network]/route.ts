@@ -4,7 +4,7 @@ import { POOLS } from '../../../config/pools'
 import { getCurator } from '../../../config/curators'
 
 // Import deployed contract addresses from the canonical deployment artifacts
-import usdcDeployment from '../../../../lib/contracts/deployments/base_sepolia/usdc.json'
+import usdcDeployment from '../../../../../contracts/deployments/base_sepolia/usdc.json'
 
 export const revalidate = 60
 

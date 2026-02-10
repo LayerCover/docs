@@ -21,9 +21,11 @@ import {
   Bluetooth,
   BookAudio,
   BookMarked,
+  BookOpen,
   BookText,
   BookX,
   BoxSelect,
+  Braces,
   Briefcase,
   Brush,
   Cake,
@@ -46,6 +48,8 @@ import {
   CloudHail,
   CloudUpload,
   Coffee,
+  Cog,
+  Compass,
   ConciergeBell,
   Copy,
   CornerLeftDown,
@@ -92,11 +96,13 @@ import {
   Laugh,
   LayoutTemplate,
   Library,
+  Lightbulb,
   Link2,
   ListOrdered,
   LoaderCircle,
   Lollipop,
   MailSearch,
+  Map as MapIcon,
   Maximize2,
   MessageCircle,
   MessageCircleDashed,
@@ -109,6 +115,7 @@ import {
   MoveHorizontal,
   Music4,
   Network,
+  NotebookPen,
   NotepadText,
   Outdent,
   PaintRoller,
@@ -121,6 +128,7 @@ import {
   PhoneMissed,
   PiggyBank,
   PlaneTakeoff,
+  PlugZap,
   Pocket,
   PowerOff,
   Rabbit,
@@ -133,15 +141,18 @@ import {
   Ruler,
   Scale3D,
   ScatterChart,
+  School,
   ScrollText,
   Search,
   SearchCode,
   ServerCog,
   Shield,
+  ShieldCheck,
   ShieldX,
   Shrub,
   SignalMedium,
   Sliders,
+  Sparkles,
   Terminal,
   Users,
 } from 'lucide-react'
@@ -703,6 +714,89 @@ function isItemOrDescendantActive(item: SidebarItem, activePath: string): boolea
   return item.children?.some((child) => isItemOrDescendantActive(child, activePath)) ?? false
 }
 
+function VersionSelector({
+  selectedAudience,
+  onAudienceChange
+}: {
+  selectedAudience: 'users' | 'developers' | 'curators'
+  onAudienceChange: (audience: 'users' | 'developers' | 'curators') => void
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const audiences = [
+    {
+      label: 'Users',
+      value: 'users' as const,
+      href: '/user-guides/for-policyholders',
+      description: 'For policyholders & underwriters',
+      icon: Users
+    },
+    {
+      label: 'Developers',
+      value: 'developers' as const,
+      href: '/integration/frontend-integration',
+      description: 'For builders & integrators',
+      icon: Terminal
+    },
+    {
+      label: 'Curators',
+      value: 'curators' as const,
+      href: '/advanced-features/syndicates',
+      description: 'For syndicate managers',
+      icon: Briefcase
+    },
+  ]
+
+  const current = audiences.find(a => a.value === selectedAudience) || audiences[0]
+  const CurrentIcon = current.icon
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm border border-border rounded-lg hover:bg-accent transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <CurrentIcon className="h-4 w-4" />
+          <span className="font-medium">{current.label}</span>
+        </div>
+        <ChevronDown className={cn(
+          "h-4 w-4 transition-transform",
+          isOpen && "rotate-180"
+        )} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-1 py-1 bg-background border border-border rounded-lg shadow-lg z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+          {audiences.map((audience) => {
+            const Icon = audience.icon
+            const isSelected = audience.value === selectedAudience
+            return (
+              <button
+                key={audience.value}
+                onClick={() => {
+                  onAudienceChange(audience.value)
+                  setIsOpen(false)
+                }}
+                className={cn(
+                  "w-full flex items-start gap-2 px-3 py-2 hover:bg-accent transition-colors group text-left",
+                  isSelected && "bg-accent"
+                )}
+              >
+                <Icon className="h-4 w-4 mt-0.5 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                <div className="flex-1">
+                  <div className={cn("font-medium text-sm", isSelected && "text-brand-600 dark:text-brand-400")}>
+                    {audience.label}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{audience.description}</div>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function ExternalLink({
   href,
