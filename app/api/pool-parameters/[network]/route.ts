@@ -3,8 +3,8 @@ import { createPublicClient, http, Address } from 'viem'
 import { POOLS } from '../../../config/pools'
 import { getCurator } from '../../../config/curators'
 
-// Import deployed contract addresses from the canonical deployment artifacts
-import usdcDeployment from '../../../../../contracts/deployments/base_sepolia/usdc.json'
+// Import deployed contract addresses from local config (synced from monorepo)
+import usdcDeployment from '../../../../config/deployments/base_sepolia_usdc.json'
 
 export const revalidate = 60
 
