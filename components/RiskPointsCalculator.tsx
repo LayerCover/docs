@@ -139,7 +139,7 @@ export function RiskPointsCalculator({
                                     ? 'bg-amber-500'
                                     : 'bg-brand-500'
                                 }`}
-                            style={{ width: `${Math.min(pointsPercent, 100)}%` }} // eslint-disable-line react-dom/no-unsafe-inline-style
+                            style={{ width: `${Math.min(pointsPercent, 100)}%` }}
                         />
                     </div>
                     {isOverBudget && (
