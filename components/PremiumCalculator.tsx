@@ -97,8 +97,8 @@ export function PremiumCalculator({
                                 key={d}
                                 onClick={() => setDuration(d)}
                                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${duration === d
-                                        ? 'bg-brand-500 text-white shadow-sm'
-                                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                    ? 'bg-brand-500 text-white shadow-sm'
+                                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
                                     }`}
                             >
                                 {d}d
@@ -131,7 +131,7 @@ export function PremiumCalculator({
                     </div>
                 </div>
 
-                <div className="mt-4 text-xs text-muted-foreground text-center font-mono">
+                <div className="mt-4 text-xs text-muted-foreground text-center font-mono overflow-x-auto whitespace-nowrap">
                     P = ({coverage.toLocaleString()} × {rate} × {duration}) / (365 × 10,000) = ${premium.toFixed(2)}
                 </div>
             </div>

@@ -253,7 +253,7 @@ function ContractTable({
           <tr className="border-b border-border">
             <th className="text-left py-3 px-4 font-semibold">Contract</th>
             <th className="text-left py-3 px-4 font-semibold">Address</th>
-            <th className="text-left py-3 px-4 font-semibold">ABI</th>
+            <th className="text-left py-3 px-4 font-semibold hidden sm:table-cell">ABI</th>
           </tr>
         </thead>
         <tbody>
@@ -274,7 +274,7 @@ function ContractTable({
                   <CopyButton text={contract.address} />
                 </div>
               </td>
-              <td className="py-3 px-4">
+              <td className="py-3 px-4 hidden sm:table-cell">
                 {contract.abi ? (
                   <a
                     href={`https://github.com/layercover/monorepo/blob/main/packages/contracts/abis/${contract.abi}`}
@@ -303,10 +303,10 @@ export function ContractAddresses() {
   return (
     <div className="space-y-6">
       {/* Network Selector */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
         <span className="text-sm font-medium">Network:</span>
         <Listbox value={network} onChange={setNetwork}>
-          <div className="relative mt-1 w-72">
+          <div className="relative mt-1 w-full sm:w-72">
             <Listbox.Button className="flex w-full items-center gap-3 rounded-lg border border-border bg-background px-4 py-2 text-left shadow-sm transition-colors hover:border-primary/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
               <img src={network.logo} alt={`${network.name} logo`} className="h-7 w-7 rounded-md" />
               <div className="flex flex-1 flex-col">

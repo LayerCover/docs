@@ -341,7 +341,7 @@ export function PoolParameters() {
                       <th className="px-4 py-3 text-left font-semibold">Claim Fee</th>
                       <th className="px-4 py-3 text-left font-semibold">Coverage Sold</th>
 
-                      <th className="px-4 py-3 text-left font-semibold">Governance</th>
+                      <th className="px-4 py-3 text-left font-semibold hidden sm:table-cell">Governance</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/80">
@@ -382,7 +382,7 @@ export function PoolParameters() {
                         <td className="px-4 py-3 align-middle text-sm">{formatBps(pool.claimFeeBps)}</td>
                         <td className="px-4 py-3 align-middle text-sm">${formatStableAmount(pool.totalCoverageSold)}</td>
 
-                        <td className="px-4 py-3 align-middle">
+                        <td className="px-4 py-3 align-middle hidden sm:table-cell">
                           <div className="flex flex-col gap-1 text-xs">
                             {pool.isPaused && (
                               <span className="inline-flex items-center gap-1 text-destructive font-medium">

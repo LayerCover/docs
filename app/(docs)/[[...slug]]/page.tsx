@@ -173,11 +173,11 @@ export default async function DocPage({ params }: PageProps) {
             <Breadcrumbs slug={doc.slug} doc={doc} />
 
             <article className="prose prose-slate dark:prose-invert max-w-none">
-              <h1 className="text-4xl font-bold tracking-tight mb-4">
+              <h1 className="text-2xl sm:text-4xl font-bold tracking-tight mb-4">
                 {doc.frontmatter.title}
               </h1>
               {doc.frontmatter.description && (
-                <p className="text-xl text-muted-foreground mb-8">
+                <p className="text-base sm:text-xl text-muted-foreground mb-8">
                   {doc.frontmatter.description}
                 </p>
               )}

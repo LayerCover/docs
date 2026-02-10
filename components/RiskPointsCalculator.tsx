@@ -81,39 +81,39 @@ export function RiskPointsCalculator({
                 {pools.map((pool) => (
                     <div
                         key={pool.id}
-                        className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border/50"
+                        className="p-3 rounded-lg bg-muted/50 border border-border/50 space-y-2"
                     >
-                        <span className="text-sm">{pool.emoji}</span>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-foreground truncate">{pool.name}</span>
-                                <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
-                                    {pool.rating}
-                                </span>
-                                <span className="text-xs text-muted-foreground">cost: {pool.riskCost}</span>
-                            </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm">{pool.emoji}</span>
+                            <span className="text-sm font-medium text-foreground truncate">{pool.name}</span>
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                                {pool.rating}
+                            </span>
+                            <span className="text-xs text-muted-foreground">cost: {pool.riskCost}</span>
+                            {pool.allocation >= perPoolCap && perPoolCap > 0 && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400 font-medium whitespace-nowrap"
+                                >35% cap</span>
+                            )}
                         </div>
-                        {pool.allocation >= perPoolCap && perPoolCap > 0 && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400 font-medium whitespace-nowrap"
-                            >35% cap</span>
-                        )}
-                        <input
-                            type="range"
-                            min={0}
-                            max={perPoolCap}
-                            step={1000}
-                            value={pool.allocation}
-                            onChange={(e) => updateAllocation(pool.id, Number(e.target.value))}
-                            className="w-32 h-2 rounded-full appearance-none cursor-pointer accent-brand-500 bg-muted"
-                            aria-label={`Allocation Slider for ${pool.name}`}
-                        />
-                        <input
-                            type="number"
-                            value={pool.allocation}
-                            onChange={(e) => updateAllocation(pool.id, Number(e.target.value))}
-                            className="w-24 px-2 py-1 rounded-md border border-border bg-background text-foreground text-xs font-mono text-right"
-                            aria-label={`Allocation Value for ${pool.name}`}
-                        />
+                        <div className="flex items-center gap-3 pl-6">
+                            <input
+                                type="range"
+                                min={0}
+                                max={perPoolCap}
+                                step={1000}
+                                value={pool.allocation}
+                                onChange={(e) => updateAllocation(pool.id, Number(e.target.value))}
+                                className="flex-1 h-2 rounded-full appearance-none cursor-pointer accent-brand-500 bg-muted"
+                                aria-label={`Allocation Slider for ${pool.name}`}
+                            />
+                            <input
+                                type="number"
+                                value={pool.allocation}
+                                onChange={(e) => updateAllocation(pool.id, Number(e.target.value))}
+                                className="w-24 px-2 py-1 rounded-md border border-border bg-background text-foreground text-xs font-mono text-right"
+                                aria-label={`Allocation Value for ${pool.name}`}
+                            />
+                        </div>
                     </div>
                 ))}
             </div>

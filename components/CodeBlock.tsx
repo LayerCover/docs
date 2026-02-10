@@ -260,7 +260,7 @@ export function CodeBlock({ language, children }: { language: string; children: 
   const style = resolvedTheme === 'dark' ? solidityDarkTheme : solidityLightTheme
 
   return (
-    <div className="relative group">
+    <div className="relative group overflow-x-auto">
       <CopyButton text={children} />
       <SyntaxHighlighter
         style={style}

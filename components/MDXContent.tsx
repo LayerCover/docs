@@ -184,6 +184,11 @@ const markdownComponents = {
       {...props}
     />
   ),
+  table: ({ node, ...props }: any) => (
+    <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 my-4">
+      <table className="min-w-full text-sm" {...props} />
+    </div>
+  ),
 }
 
 const remarkPluginList = [remarkGfm, remarkMath]
