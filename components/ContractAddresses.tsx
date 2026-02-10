@@ -30,7 +30,57 @@ interface NetworkData {
 }
 
 
-import baseSepoliaAddresses from '../data/deployments/base_sepolia/all_addresses.json'
+// Base Sepolia addresses — synced from deployments/base_sepolia/usdc.json
+// Run: node scripts/sync-addresses.js  to refresh after deployment
+const baseSepoliaAddresses: Record<string, string> = {
+  PolicyManager: '0xbd0Cb34253c84201F746F0A9DF062d82c0823c56',
+  PolicyNFT: '0x0Dd77E091BeA95793f6a853928ecF1C31606bE26',
+  RiskManager: '0x132cD9EDb510dffaA81554753D0713cF546aDD77',
+  PoolRegistry: '0xB65cE4662FFB20aE7Ddd7314B975F8A1b6dA4e59',
+  CapitalPool: '0xe0324E62990AB2d89D8b883B201ED0BcD860AD7E',
+  UnderwriterManager: '',
+  RewardDistributor: '0x5c4BB0b5076C10d139930F05767570A7cfDcF1e7',
+  LossDistributor: '',
+  SharedAssetController: '0x30911b930A8d52D1A8D70fDd14fDB876a34F4944',
+  ReinsuranceController: '0x30911b930A8d52D1A8D70fDd14fDB876a34F4944',
+  WithdrawalQueue: '',
+  RateEngine: '',
+  ReferralManager: '0x7dcA6B6f8AaB90c79280153D0Aef03018D2740c7',
+  GovernanceToken: '0x09139808A2Cf6B11B7e351Bf3E980776cA43d9F2',
+  StakingContract: '',
+  Committee: '',
+  AaveAdapter: '0x81c9332abFd74Cef1163CB0d2a40eE95b5b6a867',
+  CompoundAdapter: '0xc0ccF80d3767E69675c18a549d705D76C114B1Ee',
+  IntentMatcher: '0x7865f2e07dFe0d4dC4345bF5DFFFAd757a901337',
+  IntentOrderBook: '',
+  SyndicateFactory: '0x5688ab791402f5449973A078711dB889FA1fcA3B',
+  TrancheVaultFactory: '',
+  GovernorVaultFactory: '',
+  SyndicateImplementation: '0x21D8827717f0e51566786EC29dEDD6685a0Eb1e8',
+  EscrowVaultImpl: '',
+  GovernorVaultImplementation: '',
+  PolicyManagerLifecycle: '',
+  PolicyManagerPremium: '',
+  PolicyManagerAdmin: '',
+  JuniorTrancheVault: '',
+  MezzanineTrancheVault: '',
+  SeniorTrancheVault: '',
+  SyndicateDurationLib: '0xB442c2f94e21454cCd0B542a9991193eD40Ca8D6',
+  SyndicateIntentLib: '0x1b338766ef3e0E31e879403c90CD2458E3d0F894',
+  SyndicateYieldOperationsLib: '',
+  PriceOracle: '0xF9A0925B3558858B53E0990Fe64A12815a4023Ff',
+  TestnetPriceFeed: '',
+  MulticallReader: '0x518ae7741684a369953E05f1833222e92117528b',
+  MulticallReaderV2: '0x518ae7741684a369953E05f1833222e92117528b',
+  UserDataAggregator: '0x246d4E970A2B542BF70df7bf01D32A8c49E4076F',
+  PoolDataAggregator: '0x7A0fa269c33BD9A104E742866745Abe9a82cC22F',
+  DeploymentRegistry: '',
+  InsuredWithdrawRouter: '',
+  PayoutManager: '0xF28f014fc1a7681179A7f776948892dccd32Eaa2',
+  PoolAllocationManager: '0xAdBEb602b8d05287bd93c2de51aa4F3faE2fC9a9',
+  YieldStrategyManager: '0x980708f7aa1F6c61805Cc8e7374Ec1844d252297',
+  ProtocolConfigurator: '0x3DBA694B78fc6d2043233E7234AcE2E3d8158Ba6',
+}
 
 const networks: NetworkData[] = [
   {
@@ -94,7 +144,7 @@ const networks: NetworkData[] = [
         { name: 'SharedAssetController', address: baseSepoliaAddresses.SharedAssetController, abi: 'SharedAssetController.json' },
         { name: 'ReinsuranceController', address: baseSepoliaAddresses.ReinsuranceController, abi: 'ReinsuranceController.json' },
         { name: 'WithdrawalQueue', address: baseSepoliaAddresses.WithdrawalQueue, abi: 'WithdrawalQueue.json' },
-
+        { name: 'RateEngine', address: baseSepoliaAddresses.RateEngine, abi: 'RateEngine.json' },
       ],
       supporting: [
         { name: 'ReferralManager', address: baseSepoliaAddresses.ReferralManager, abi: 'ReferralManager.json' },
@@ -117,7 +167,7 @@ const networks: NetworkData[] = [
       ],
       implementations: [
         { name: 'SyndicateImplementation', address: baseSepoliaAddresses.SyndicateImplementation, abi: 'Syndicate.json' },
-
+        { name: 'EscrowVaultImpl', address: baseSepoliaAddresses.EscrowVaultImpl, abi: 'EscrowVault.json' },
         { name: 'GovernorVaultImplementation', address: baseSepoliaAddresses.GovernorVaultImplementation, abi: 'GovernorVault.json' },
         { name: 'PolicyManagerLifecycle', address: baseSepoliaAddresses.PolicyManagerLifecycle, abi: 'PolicyManagerLifecycle.json' },
         { name: 'PolicyManagerPremium', address: baseSepoliaAddresses.PolicyManagerPremium, abi: 'PolicyManagerPremium.json' },
@@ -139,7 +189,7 @@ const networks: NetworkData[] = [
         { name: 'UserDataAggregator', address: baseSepoliaAddresses.UserDataAggregator, abi: 'UserDataAggregator.json' },
         { name: 'PoolDataAggregator', address: baseSepoliaAddresses.PoolDataAggregator, abi: 'PoolDataAggregator.json' },
         { name: 'DeploymentRegistry', address: baseSepoliaAddresses.DeploymentRegistry, abi: 'DeploymentRegistry.json' },
-
+        { name: 'InsuredWithdrawRouter', address: baseSepoliaAddresses.InsuredWithdrawRouter, abi: 'InsuredWithdrawRouter.json' },
       ],
       operations: [
         { name: 'PayoutManager', address: baseSepoliaAddresses.PayoutManager, abi: 'PayoutManager.json' },

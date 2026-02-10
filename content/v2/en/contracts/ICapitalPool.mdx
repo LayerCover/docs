@@ -1,13 +1,13 @@
 ---
 title: ICapitalPool
-description: Interface for the CapitalPool, the secure vault for idle assets.
+description: Interface for the CapitalPool, the unified vault for underwriter capital and liquidity management.
 ---
 
 <Callout type="info">
   View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
 </Callout>
 
-The **ICapitalPool** is the underlying vault where idle assets are held when they are not deployed to an external yield strategy. It serves as the "custody" layer for the protocol and provides coordination functions for payout settlement.
+The **ICapitalPool** is the unified vault that manages underwriter capital, liquidity provisioning, and coordinates with the backstop system for claim payouts. It extends ERC4626 for standardized vault interactions.
 
 ## Interface
 
@@ -18,6 +18,8 @@ pragma solidity ^0.8.20;
 import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Types} from "../libraries/helpers/Types.sol";
+import {IYieldStrategyManager} from "./IYieldStrategyManager.sol";
+import {ISharedAssetController} from "./ISharedAssetController.sol";
 
 /**
  * @title ICapitalPool
@@ -28,36 +30,60 @@ interface ICapitalPool is IERC4626 {
        ===== Admin / Config =====
        ========================= */
 
-    function setPayoutManager(address _payoutManager) external;
-    function configureReinsurance(address controller, uint256 bufferBps, uint256 maxDrawPerCall) external;
-    function setYieldAdapterRewardPool(address adapterAddress, uint256 rewardPoolId) external;
-    function setDepositCap(uint256 newCap) external;
-    function depositCap() external view returns (uint256);
-    function setBaseYieldAdapter(Types.YieldPlatform _platform, address _adapterAddress) external;
+    /**
+     * @notice Configures the capital pool with bundled settings
+     * @param config The CapitalPoolConfig struct with all configuration parameters
+     */
+    function configure(Types.CapitalPoolConfig memory config) external;
+
+    /**
+     * @notice Returns the current system state
+     * @return The CapitalSystemState struct containing current state
+     */
+    function state() external view returns (Types.CapitalSystemState memory);
+
+    /**
+     * @notice Alias for state() - returns current system state
+     * @return The CapitalSystemState struct
+     */
+    function getSystemState() external view returns (Types.CapitalSystemState memory);
 
     /* ============================
        ===== Underwriter Flows =====
        ============================ */
 
-    /// @notice UM deposits on behalf of a user and sets/uses their adapter choice.
+    /**
+     * @notice Deposits assets on behalf of a user with yield platform choice
+     * @dev Called by allocation manager during capital deployment
+     * @param user Address to credit the deposit to
+     * @param amount Amount of underlying asset to deposit
+     * @param yieldChoice The yield platform preference (AAVE, COMPOUND, etc.)
+     */
     function depositFor(address user, uint256 amount, Types.YieldPlatform yieldChoice) external;
 
     /* ==========================
        ===== Risk Operations =====
        ========================== */
 
-    /// @notice Burns shares from an underwriter during loss charging
+    /**
+     * @notice Burns shares from an underwriter during loss charging
+     * @dev Called by PayoutManager when distributing claim losses
+     * @param underwriter The underwriter whose shares to burn
+     * @param burnAmount Number of shares to burn
+     */
     function burnSharesForLoss(address underwriter, uint256 burnAmount) external;
-
-    /// @notice Harvest strategy yield from an adapter and distribute via RewardDistributor.
-    function harvestAndDistributeYield(address adapterAddress) external;
 
     /* =========================
        ===== View Helpers  =====
        ========================= */
 
-    /// @notice Per-underwriter adapter selection and account summary.
-    function getUnderwriterAdapterAddress(address underwriter) external view returns (address);
+    /**
+     * @notice Returns per-underwriter account summary
+     * @param underwriter Address to query
+     * @return currentValue Current value of underwriter's position
+     * @return yieldChoice Their selected yield platform
+     * @return masterShares Number of vault shares held
+     */
     function getUnderwriterAccount(address underwriter)
         external
         view
@@ -67,50 +93,107 @@ interface ICapitalPool is IERC4626 {
             uint256 masterShares
         );
 
-    /// @notice Principal tracked for pledge scaling in UM.
-    function getUnderwriterPrincipal(address underwriter) external view returns (uint256);
-
-    /// @notice Shares reserved for pending payout settlements.
-    function unsettledPayoutShares() external view returns (uint256);
-
-    /// @notice Transfers vault shares to a recipient for payout coverage
-    function transferSharesForPayout(address recipient, uint256 shares) external returns (uint256 transferred);
-    
-    /// @notice Withdraws uncommitted liquidity from yield adapters
-    function drawStrategyLiquidity(uint256 amount) external returns (uint256 drawn);
+    /**
+     * @notice Issues vault shares to a recipient for payout coverage
+     * @dev Called during claim execution to mint shares for payout
+     * @param recipient Address to receive the shares
+     * @param shares Number of shares to issue
+     * @return issued Actual shares issued
+     */
+    function issueSharesForPayout(address recipient, uint256 shares) external returns (uint256 issued);
 
     /* =====================================
        ===== Coordination (PayoutManager) =====
        ===================================== */
 
-    /// @notice Gets the idle balance available for immediate payout
+    /**
+     * @notice Gets the idle balance available for immediate payout
+     * @return balance Available idle liquidity
+     */
     function getAvailableLiquidity() external view returns (uint256 balance);
 
-    /// @notice Gets principal deposited in a specific adapter
-    function getPrincipalInAdapter(address adapter) external view returns (uint256 principal);
-
-    /// @notice Withdraws capital from a specific adapter for payout (soft-fail)
-    function withdrawFromAdapter(address adapter, uint256 amount) external returns (uint256 withdrawn);
-
-    /// @notice Withdraws idle capital from the CapitalPool (soft-fail)
+    /**
+     * @notice Withdraws idle capital from the CapitalPool (soft-fail)
+     * @param amount Amount to withdraw
+     * @return withdrawn Actual amount withdrawn
+     */
     function withdrawIdle(uint256 amount) external returns (uint256 withdrawn);
 
-    /// @notice Records that value was pulled from an adapter outside the normal withdraw flow
-    function syncAdapterEmergencyTransfer(address adapter, uint256 valueLost, bool markFailed) external;
-
-    /// @notice Records payout execution and updates unsettled shares
+    /**
+     * @notice Records payout execution and updates unsettled shares
+     * @param payoutShares Number of shares used for payout
+     */
     function recordPayoutExecution(uint256 payoutShares) external;
 
-    /// @notice Ensures enough idle liquidity exists by optionally drawing from reinsurance
+    /**
+     * @notice Ensures enough idle liquidity exists by optionally drawing from backstop
+     * @param requiredAmount Amount of liquidity needed
+     * @return drawn Amount drawn from backstop (if any)
+     */
     function ensureLiquidity(uint256 requiredAmount) external returns (uint256 drawn);
 
-    /// @notice Draws reinsurance liquidity directly to the caller (PayoutManager)
-    function drawReinsuranceLiquidity(uint256 amount) external returns (uint256 drawn);
+    /**
+     * @notice Draws backstop liquidity directly to the caller (PayoutManager)
+     * @param amount Amount to draw
+     * @return drawn Actual amount drawn
+     */
+    function drawBackstopLiquidity(uint256 amount) external returns (uint256 drawn);
 
-    /// @notice Checks if an adapter has failed
-    function isAdapterFailed(address adapter) external view returns (bool failed);
-
-    /// @notice Checks if adapter routing is enabled (not in emergency mode)
+    /**
+     * @notice Checks if adapter routing is enabled (not in emergency mode)
+     * @return enabled True if yield adapter routing is active
+     */
     function adapterRoutingEnabled() external view returns (bool enabled);
+
+    /**
+     * @notice Swaps adapter debt for backstop liquidity during deficit scenarios
+     * @param adapter The adapter with the deficit
+     * @param deficit Amount of deficit to cover
+     * @return swapped Amount swapped from backstop
+     */
+    function swapAdapterDebtForBackstopLiquidity(address adapter, uint256 deficit) external returns (uint256 swapped);
 }
 ```
+
+## Capital Flow
+
+```mermaid
+flowchart TB
+    subgraph Deposits
+        D[Underwriter] -->|depositFor| CP[CapitalPool]
+    end
+    
+    subgraph YieldRouting
+        CP -->|invest| YSM[YieldStrategyManager]
+        YSM --> AA[Aave Adapter]
+        YSM --> CA[Compound Adapter]
+    end
+    
+    subgraph Payouts
+        PM[PayoutManager] -->|withdrawIdle| CP
+        PM -->|drawBackstopLiquidity| BS[Backstop Pool]
+        CP -->|ensureLiquidity| BS
+    end
+    
+    subgraph LossRealization
+        PM -->|burnSharesForLoss| CP
+    end
+```
+
+## Configuration
+
+The CapitalPool uses a bundled configuration pattern via `Types.CapitalPoolConfig`:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `yieldStrategyManager` | `address` | YieldStrategyManager contract |
+| `backstopController` | `address` | SharedAssetController for reinsurance |
+| `payoutManager` | `address` | PayoutManager for claim coordination |
+| `backstopBufferBps` | `uint256` | Buffer percentage for backstop draws |
+| `maxBackstopDrawPerCall` | `uint256` | Maximum backstop draw per transaction |
+
+## Related Documentation
+
+- [Syndicates](/underwriters/syndicates) - How syndicates use the capital pool
+- [Paying Claims](/underwriters/paying-claims) - Payout flow through capital pool
+- [IYieldStrategyManager](/contracts/IYieldStrategyManager) - Yield strategy management

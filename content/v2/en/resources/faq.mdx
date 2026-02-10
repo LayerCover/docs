@@ -1,21 +1,18 @@
 ---
-title: FAQ
+title: Frequently Asked Questions
 description: Frequently asked questions about LayerCover
 order: 10
 sidebar: FAQ
 ---
-
 import { Callout } from '@/components/Callout'
 import { FAQAccordion } from '@/components/FAQAccordion'
-
-# Frequently Asked Questions
 
 ## For Policyholders
 
 <FAQAccordion faqs={[
   {
     question: "What happens if a protocol I'm covered for gets hacked?",
-    answer: "You can file a claim immediately through the LayerCover dashboard. The process works like an American-style put option: you transfer your affected assets to the protocol and receive an instant USDC payout at your covered value. No governance votes, no waiting periods."
+    answer: "You can file a claim immediately through the LayerCover dashboard. The process works like an American-style put option: you transfer your affected assets to the protocol and receive an instant USDC payout at your covered value. No governance votes, no waiting periods. See [Filing Claims](/policyholders/filing-claims) for the full process."
   },
   {
     question: "How long until my claim is paid?",
@@ -35,7 +32,7 @@ import { FAQAccordion } from '@/components/FAQAccordion'
   },
   {
     question: "What assets can I get coverage for?",
-    answer: "LayerCover supports two types of coverage: Stablecoins (protection against de-peg events like USDC, DAI) and Vault Shares (protection for ERC-4626 yield-bearing vault positions)."
+    answer: "LayerCover supports two main categories: **Stablecoins** (protection against de-peg events like USDC, DAI) and **Vault Shares** (protection for ERC-4626 yield-bearing vault positions). See [Buying Cover](/policyholders/buying-cover) for the full list of supported asset types."
   }
 ]} />
 
@@ -53,16 +50,16 @@ import { FAQAccordion } from '@/components/FAQAccordion'
     answer: "Yes. Salvage rights are tokenized and can be traded on secondary markets. This lets underwriters exit frozen positions immediately by selling to distressed debt funds, rather than waiting for potential recovery."
   },
   {
-    question: "What's the withdrawal notice period?",
-    answer: "30 days. When you request to withdraw from a syndicate, your capital remains locked for 30 days before you can redeem. This ensures the protocol remains solvent and prevents front-running of claims."
+    question: "Is there a withdrawal notice period?",
+    answer: "No. Syndicate withdrawals are instant for unlocked capital. Capital that is actively backing policies is locked until those policies expire or settle. The Backstop Pool may have its own withdrawal schedule."
   },
   {
     question: "How are losses distributed?",
-    answer: "Losses are distributed pro-rata based on your share of the pool at the exact block of the claim event. You cannot avoid losses by withdrawing after an exploit—the protocol snapshots liability at the moment of the claim."
+    answer: "Losses are distributed pro-rata based on your share of the pool at the exact block of the claim event. You cannot avoid losses by withdrawing after an exploit - the protocol snapshots liability at the moment of the claim."
   },
   {
     question: "What returns can I expect?",
-    answer: "Returns come from two sources: Premiums (your share of policy premiums paid by policyholders) and Yield (external DeFi yields from idle capital deployed to Aave/Compound). Actual APY varies by syndicate strategy, premium rates, and market conditions."
+    answer: "Returns come from two sources: **Premiums** (your share of policy premiums paid by policyholders) and **Yield** (external DeFi yields from idle capital deployed to Aave/Compound). Actual APY varies by syndicate strategy, premium rates, and market conditions. See [Underwriting](/underwriters) for a detailed breakdown."
   }
 ]} />
 
@@ -73,11 +70,23 @@ import { FAQAccordion } from '@/components/FAQAccordion'
 <FAQAccordion faqs={[
   {
     question: "Is LayerCover audited?",
-    answer: "See our Audits page at /resources/audits for the latest security audit information."
+    answer: "Yes. See our [Audits](/resources/audits) page for the latest security audit reports and findings."
+  },
+  {
+    question: "What chains is LayerCover deployed on?",
+    answer: "LayerCover is currently deployed on Base. See our [Contract Addresses](/contracts) page for the full list."
+  },
+  {
+    question: "Is there a LayerCover token?",
+    answer: "The protocol includes a governance token outlined in our tokenomics framework. Details will be published closer to TGE."
+  },
+  {
+    question: "How is LayerCover governed?",
+    answer: "LayerCover uses a multi-tiered governance model with a Risk Committee, an elected Governor system, and delegate staking. See [Governance](/protocol/governance) for the full architecture."
   },
   {
     question: "Where can I get help?",
-    answer: "Discord: discord.gg/layercover, Documentation: You're reading it!, Technical Reference: /contracts for contract interfaces."
+    answer: "Join our [Discord](https://discord.gg/layercover) community, read through this documentation, or check the [Contract Interfaces](/contracts) for technical reference."
   }
 ]} />
 

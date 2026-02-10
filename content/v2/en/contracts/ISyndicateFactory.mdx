@@ -16,6 +16,22 @@ The **ISyndicateFactory** is the factory contract used to deploy new Syndicate v
 pragma solidity ^0.8.20;
 
 interface ISyndicateFactory {
+    // ==================== Syndicate Deployment ====================
+
+    /**
+     * @notice Deploys a new Syndicate vault using the minimal proxy pattern
+     * @dev Creates an EIP-1167 clone of the Syndicate implementation
+     * @param asset The underlying asset for the vault (e.g., wstETH, USDC)
+     * @param capitalPool CapitalPool contract address for yield deployment
+     * @param underwriterManager UnderwriterManager for allocation tracking
+     * @param riskManager RiskManager for salvage/claims handling
+     * @param syndicateManager Address authorized to manage operations
+     * @param feeRecipient Address to receive management fees
+     * @param managementFeeBps Management fee in basis points
+     * @param name ERC20 token name for vault shares
+     * @param symbol ERC20 token symbol for vault shares
+     * @return syndicate Address of the newly deployed Syndicate
+     */
     function createSyndicate(
         address asset,
         address capitalPool,
@@ -23,23 +39,60 @@ interface ISyndicateFactory {
         address riskManager,
         address syndicateManager,
         address feeRecipient,
-        uint16 performanceFeeBps,
-        uint16 yieldFeeBps,
-        uint8 feeModel,
+        uint16 managementFeeBps,
         string calldata name,
         string calldata symbol
     ) external returns (address syndicate);
 
+    // ==================== Registry Functions ====================
+
+    /**
+     * @notice Checks if an address is a registered Syndicate
+     * @param account Address to check
+     * @return True if the address is a registered Syndicate
+     */
     function isRegisteredSyndicate(address account) external view returns (bool);
 
+    /**
+     * @notice Registers an existing Syndicate in the factory registry
+     * @dev Only callable by protocol admin
+     * @param syndicate Address of the Syndicate to register
+     */
     function registerSyndicate(address syndicate) external;
 
+    /**
+     * @notice Removes a Syndicate from the registry
+     * @dev Does not destroy the Syndicate, only removes from registry
+     * @param syndicate Address of the Syndicate to deregister
+     */
     function deregisterSyndicate(address syndicate) external;
 
+    /**
+     * @notice Returns the total number of registered Syndicates
+     * @return Count of registered Syndicates
+     */
     function syndicateCount() external view returns (uint256);
 
+    /**
+     * @notice Returns a paginated list of Syndicate addresses
+     * @param offset Starting index for pagination
+     * @param limit Maximum number of addresses to return
+     * @return Array of Syndicate addresses
+     */
     function getSyndicates(uint256 offset, uint256 limit) external view returns (address[] memory);
 
+    // ==================== Administration ====================
+
+    /**
+     * @notice Enables or disables permissionless Syndicate creation
+     * @dev When disabled, only admin can create Syndicates
+     * @param allowed True to allow anyone to create Syndicates
+     */
     function setPermissionlessCreation(bool allowed) external;
 }
 ```
+
+## Related Documentation
+
+- [Syndicates](/underwriters/syndicates) - How syndicates work
+- [ISyndicate](/contracts/ISyndicate) - The deployed vault interface

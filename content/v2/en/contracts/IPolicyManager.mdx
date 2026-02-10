@@ -7,7 +7,7 @@ description: Interface for policy issuance and lifecycle management.
   View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
 </Callout>
 
-The **IPolicyManager** is the central entry point for the insurance policy system. It handles policy issuance, modifications, expiration, and claims. It uses a Shared Storage Proxy pattern to split logic across multiple delegates while maintaining a unified state.
+The **IPolicyManager** is the central entry point for the insurance policy system. It handles policy issuance, modifications, expiration, and claims. It uses a unified purchase flow via the `purchaseCoverage` function.
 
 ## Interface
 
@@ -19,50 +19,144 @@ import "./IPolicyNFT.sol";
 import {Types} from "../libraries/helpers/Types.sol";
 
 interface IPolicyManager {
-    function policyNFT() external view returns (IPolicyNFT);
-    function isPolicyActive(uint256 policyId) external view returns (bool);
-    function setCatPool(address catPoolAddress) external;
-    function setCatPremiumShareBps(uint256 newBps) external;
-    function setCoverCooldownPeriod(uint256 newPeriod) external;
-    function setClaimLockPeriod(uint256 newPeriod) external;
-    function setReserveFactor(uint256 newBps) external;
+    // ==================== View Functions ====================
 
-    function settlePremiumForClaim(uint256 policyId) external returns (bool);
-    function forceVoidPolicy(uint256 policyId, uint256 incidentBlock) external;
+    /**
+     * @notice Returns the PolicyNFT contract address
+     * @return The IPolicyNFT interface for the policy token contract
+     */
+    function policyNFT() external view returns (IPolicyNFT);
+
+    /**
+     * @notice Checks if a policy is currently active (not expired, not cancelled)
+     * @param policyId The unique ID of the policy to check
+     * @return True if the policy is active and providing coverage
+     */
+    function isPolicyActive(uint256 policyId) external view returns (bool);
+
+    /**
+     * @notice Returns the CAT pool premium share in basis points
+     * @return The percentage (in bps) of premiums directed to the reinsurance pool
+     */
     function catPremiumBps() external view returns (uint16);
 
-    function purchaseCoverageViaIntent(
-        address buyer,
-        uint256 poolId,
-        uint256 coverageAmount,
-        uint256 agreedRateBps,
-        uint256 premiumDeposit,
-        address backingUnderwriter,
-        uint256 duration,
-        bool requiresUpfront,
-        bytes32 reservationKey,
-        bytes32 referralCode,
-        uint16 cancellationPenaltyBps
-    ) external returns (uint256 policyId);
+    // ==================== Configuration ====================
 
-    function purchaseVaultCoverageViaIntent(
-        address buyer,
-        uint256 poolId,
-        address vault,
-        uint256 sharesToCover,
-        uint256 agreedRateBps,
-        uint256 premiumDeposit,
-        address backingUnderwriter,
-        uint256 duration,
-        bool requiresUpfront,
-        bytes32 reservationKey,
-        bytes32 referralCode,
-        uint16 cancellationPenaltyBps
-    ) external returns (uint256 policyId);
+    /**
+     * @notice Configures governance-related settings
+     * @dev Uses bundled config pattern for gas efficiency
+     * @param config PolicyGovernanceConfig struct with governance parameters
+     */
+    function configureGovernanceSettings(Types.PolicyGovernanceConfig calldata config) external;
 
+    /**
+     * @notice Configures yield-related settings
+     * @param config PolicyYieldConfig struct with yield parameters
+     */
+    function configureYieldSettings(Types.PolicyYieldConfig calldata config) external;
+
+    // ==================== Policy Purchase ====================
+
+    /**
+     * @notice Purchase coverage via the unified purchase flow
+     * @dev Called by IntentMatcher after matching a buyer with underwriter intent
+     * @param params PurchaseParams struct containing all purchase parameters:
+     *   - buyer: Address that will own the policy NFT
+     *   - poolId: The underwriting pool providing coverage
+     *   - coverageAmount: Maximum payout amount in case of claim
+     *   - agreedRateBps: Annual premium rate in basis points
+     *   - premiumDeposit: Upfront premium payment amount
+     *   - backingUnderwriter: Syndicate providing the coverage capital
+     *   - duration: Coverage period in seconds
+     *   - requiresUpfront: Whether full premium must be paid upfront
+     *   - reservationKey: Unique key for the capital reservation
+     *   - referralCode: Optional referral code for reward attribution
+     *   - vault: (for vault cover) The ERC4626 vault whose shares are being insured
+     *   - sharesToCover: (for vault cover) Number of vault shares to protect
+     * @return policyId The minted policy NFT ID
+     */
+    function purchaseCoverage(Types.PurchaseParams memory params) external returns (uint256 policyId);
+
+    // ==================== Policy Lifecycle ====================
+
+    /**
+     * @notice Cancels an active policy and refunds unused premium
+     * @dev Can only be called by the policy owner
+     * @param policyId The policy to cancel
+     */
     function cancelCover(uint256 policyId) external;
 
-    function setIntentMatcher(address matcher) external;
-    function setIntentMatcherAuthorization(address matcher, bool allowed) external;
+    /**
+     * @notice Settles outstanding premium before processing a claim
+     * @dev Called internally during claim flow
+     * @param policyId The policy being claimed
+     * @return True if settlement succeeded
+     */
+    function settlePremiumForClaim(uint256 policyId) external returns (bool);
+
+    /**
+     * @notice Force-voids a policy due to an incident (admin only)
+     * @dev Used when a pool experiences an incident before policy expiry
+     * @param policyId The policy to void
+     * @param incidentBlock The block number when the incident was reported
+     */
+    function forceVoidPolicy(uint256 policyId, uint256 incidentBlock) external;
+
+    // ==================== Admin Functions ====================
+
+    /**
+     * @notice Force initializes the contract (admin emergency function)
+     */
+    function forceInitialize() external;
+
+    /**
+     * @notice Upgrades the contract to a new implementation
+     * @param newImplementation Address of new implementation
+     * @param data Initialization data for the new implementation
+     */
+    function upgradeToAndCall(address newImplementation, bytes calldata data) external;
 }
 ```
+
+## PurchaseParams Struct
+
+The unified `purchaseCoverage` function uses a `PurchaseParams` struct:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `buyer` | `address` | Address that will own the policy NFT |
+| `poolId` | `uint256` | The underwriting pool providing coverage |
+| `coverageAmount` | `uint256` | Maximum payout amount in case of claim |
+| `agreedRateBps` | `uint256` | Annual premium rate in basis points |
+| `premiumDeposit` | `uint256` | Upfront premium payment amount |
+| `backingUnderwriter` | `address` | Syndicate providing coverage capital |
+| `duration` | `uint256` | Coverage period in seconds |
+| `requiresUpfront` | `bool` | Whether full premium must be paid upfront |
+| `reservationKey` | `bytes32` | Unique key for capital reservation |
+| `referralCode` | `bytes32` | Optional referral code for rewards |
+| `vault` | `address` | (Vault Cover) The ERC4626 vault being insured |
+| `sharesToCover` | `uint256` | (Vault Cover) Number of vault shares to protect |
+
+## Policy Flow
+
+```mermaid
+sequenceDiagram
+    participant Buyer
+    participant IM as IntentMatcher
+    participant PM as PolicyManager
+    participant NFT as PolicyNFT
+    participant Syn as Syndicate
+
+    Buyer->>IM: executeMatchedIntent()
+    IM->>Syn: consumeReservation()
+    IM->>PM: purchaseCoverage(params)
+    PM->>NFT: mint(buyer, policyId)
+    PM->>Syn: Split premium with reinsurer
+    PM-->>Buyer: Policy NFT
+```
+
+## Related Documentation
+
+- [Intent-Based Pricing](/protocol/pricing) - How quotes and premiums work
+- [Filing a Claim](/policyholders/filing-claims) - Claim filing and payout process
+- [IIntentMatcher](/contracts/IIntentMatcher) - The orderbook that calls `purchaseCoverage`

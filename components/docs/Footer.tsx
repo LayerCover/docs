@@ -76,7 +76,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href={withVersion('/concepts/buying-cover')}
+                  href={withVersion('/policyholders/buying-cover')}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Buy Coverage
@@ -84,7 +84,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href={withVersion('/concepts/underwriting')}
+                  href={withVersion('/underwriters')}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Provide Capital
@@ -117,7 +117,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href={withVersion('/resources/parameters')}
+                  href={withVersion('/developers/api-reference')}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   API Reference

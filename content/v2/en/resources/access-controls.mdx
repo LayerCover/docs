@@ -4,23 +4,37 @@ description: Permission system and role-based access control in LayerCover
 order: 8
 sidebar: Access Controls
 ---
+import { Callout } from '@/components/Callout'
 
-## Overview
+<Callout type="info">
+  **TL;DR:** No single key controls the protocol. LayerCover uses tiered roles (Owner, Guardian, Committee, Risk Admin) secured by timelocks, multisigs, and staking requirements.
+</Callout>
 
-LayerCover uses a sophisticated role-based access control (RBAC) system to manage permissions across the protocol. Different roles have specific capabilities to ensure security while enabling efficient operations.
-
-**Key Principles:**
-- **Least Privilege:** Each role has only the minimum permissions needed.
-- **Separation of Duties:** Critical functions require multiple roles.
-- **Time Delays:** Sensitive operations have mandatory waiting periods.
-- **Transparency:** All permission changes are publicly auditable on-chain.
-- **Emergency Access:** Guardian can pause but cannot access funds.
+LayerCover uses a role-based access control (RBAC) system built on least-privilege principles: every role has only the permissions it needs, critical actions require timelocks, and the Guardian can pause the protocol but never access funds.
 
 ---
 
 ## Role Hierarchy
 
-### Overview Table
+```mermaid
+flowchart TD
+    O["🏛️ Owner/Admin\n(2-day Timelock)"] --> G["🛡️ Guardian\n(3-of-5 Multisig)"]
+    O --> C["⚖️ Committee\n(Staked Token Holders)"]
+    O --> RA["📊 Risk Admin\n(24h Timelock)"]
+    O --> FR["💰 Fee Recipient\n(Treasury)"]
+
+    G -.->|"Emergency Pause"| P["⏸️ Protocol Pause"]
+    C -.->|"Risk Assessment"| RI["📋 Risk & Incidents"]
+    RA -.->|"Risk Ratings"| RR["🔢 Pool Configuration"]
+
+    style O fill:#3b82f620,stroke:#3b82f6
+    style G fill:#ef444420,stroke:#ef4444
+    style C fill:#8b5cf620,stroke:#8b5cf6
+    style RA fill:#f59e0b20,stroke:#f59e0b
+    style FR fill:#22c55e20,stroke:#22c55e
+```
+
+### Role Summary
 
 | Role | Control Type | Primary Responsibilities | Key Restrictions |
 | :--- | :--- | :--- | :--- |
@@ -32,91 +46,77 @@ LayerCover uses a sophisticated role-based access control (RBAC) system to manag
 
 ---
 
-## Contract-Specific Access Controls
+## Contract-Specific Permissions
 
 ### PolicyManager
 
-Primary contract that mints PolicyNFTs, tracks cover terms, and gates underwriting parameters like cooldowns and CAT premium splits. All coverage purchases now go through the intent-based flow.
+Primary contract that mints PolicyNFTs, tracks cover terms, and gates underwriting parameters.
 
-| Function | Owner | Guardian | Committee | Public |
+| Function | Owner | Guardian | Governance | Public |
 | :--- | :---: | :---: | :---: | :---: |
-| **purchaseCoverageViaIntent()** | · | · | · | ✅ (intent callers) |
-| **purchaseVaultCoverageViaIntent()** | · | · | · | ✅ (intent callers) |
+| **purchaseCoverage()** | · | · | · | ✅ (IntentMatcher only) |
 | **cancelCover()** | · | · | · | ✅ (policy owner) |
 | **lapsePolicy()** | · | · | · | ✅ (policy owner) |
+| **forceExpireIntentPolicy()** | · | · | · | ✅ (underwriter / matcher) |
 | **sweepPendingCatPremium()** | · | · | · | ✅ |
 | **sweepPendingPoolPremium()** | · | · | · | ✅ |
 | **setIssuancePaused()** | · | ✅ | · | · |
-| **setCatPremiumShareBps()** | ✅ | · | · | · |
-| **setCoverCooldownPeriod()** | ✅ | · | · | · |
-| **setClaimLockPeriod()** | ✅ | · | · | · |
-| **setReserveFactor()** | ✅ | · | · | · |
-| **setIntentMatcher()** | ✅ | · | · | · |
+| **configureGovernanceSettings()** | · | · | ✅ | · |
+| **configureYieldSettings()** | ✅ | · | · | · |
 
-### IntentOrderBook
+> **Note:** `configureGovernanceSettings()` is a batched setter that configures the backstop premium share, reserve factor, cover cooldown period, claim lock period, and wstETH price adapter in a single call.
 
-On-chain orderbook handling buy orders (from coverage buyers) and sell orders (quotes from syndicates).
+### IntentMatcher
 
-| Function | Owner | Guardian | Committee | Public |
+Off-chain intent matching engine that verifies EIP-712 signed coverage intents and buy orders, then creates policies through PolicyManager.
+
+| Function | Owner | Guardian | Governance | Public |
 | :--- | :---: | :---: | :---: | :---: |
-| **postBuyOrder()** | · | · | · | ✅ |
-| **fillBuyOrder()** | · | · | · | ✅ (syndicates) |
-| **cancelBuyOrder()** | · | · | · | ✅ (order creator) |
-| **postSellOrder()** | · | · | · | ✅ |
-| **buyFromQuote()** | · | · | · | ✅ |
-| **cancelSellOrder()** | · | · | · | ✅ (solver/syndicate owner) |
-| **setOrderBookPaused()** | · | ✅ | · | · |
-| **setPolicyManager()** | ✅ | · | · | · |
-| **setUnderwriterManager()** | ✅ | · | · | · |
+| **executeMatchedIntents()** | · | · | · | ✅ (solver / matcher) |
+| **incrementNonce()** | · | · | · | ✅ |
+| **pause()** | · | ✅ | · | · |
+| **unpause()** | · | ✅ | · | · |
 
 ### RiskManager
 
-Claims pipeline responsible for validating, processing, and settling incidents plus managing salvage recoveries.
+Claims pipeline: validates, processes, and settles incidents plus manages salvage recoveries.
 
-| Function | Owner | Guardian | Committee | Public |
+| Function | Owner | Guardian | Committee | Governance |
 | :--- | :---: | :---: | :---: | :---: |
-| **processClaim()** | · | · | · | ✅ (policy owner) |
-| **claimSalvage()** | · | · | · | ✅ (underwriters) |
-| **settleMyLosses()** | · | · | · | ✅ |
+| **processClaim()** | · | · | · | · (public, policy owner) |
 | **reportIncident()** | · | · | ✅ | · |
 | **setPoolFeeRecipient()** | · | · | ✅ | · |
-| **setCommittee()** | ✅ | · | · | · |
-| **setSalvageManager()** | ✅ | · | · | · |
-| **setPayoutManager()** | ✅ | · | · | · |
-| **setClaimSenderBlacklist()** | ✅ | · | · | · |
-| **sweepSalvageRemainder()** | ✅ | · | · | · |
+| **configure()** | · | · | · | ✅ |
+| **setClaimSenderBlacklist()** | · | · | · | ✅ |
+| **sweepSalvageRemainder()** | · | · | · | ✅ |
+| **adminForceOptimisticClaim()** | ✅ | · | · | · |
+
+> **Note:** `configure()` is a batched setter that configures the committee address, optimistic claim resolver, and testnet mode in a single call.
 
 ### CapitalPool
 
 ERC-4626 vault holding underwriting capital, routing deposits into yield strategies, and enforcing withdrawal rules.
 
-| Function | Owner | Guardian | Committee | Public |
+| Function | Owner | Guardian | Governance | Public |
 | :--- | :---: | :---: | :---: | :---: |
 | **deposit()** | · | · | · | ✅ |
 | **mint()** | · | · | · | ✅ |
-| **touchNav()** | · | · | · | ✅ (authorized) |
 | **setSystemMode()** | ✅ | · | · | · |
-| **setUnderwriterNoticePeriod()** | ✅ | · | · | · |
-| **setReinsuranceConfiguration()** | ✅ | · | · | · |
-| **setDepositCap()** | ✅ | · | · | · |
+| **configure()** | ✅ | · | · | · |
 
-> **Note:** Direct `withdraw()` and `redeem()` are disabled. Withdrawals must go through the UnderwriterManager notice-period flow.
+> **Note:** Direct `withdraw()` and `redeem()` are disabled and will revert. All withdrawals go through the PoolAllocationManager. `configure()` is a batched setter for deposit cap, backstop buffer, and max draw per call.
 
-### UnderwriterManager
+### PoolAllocations
 
-Capital allocation hub coordinating pool allocations and intent reservations for syndicates.
+Capital allocation hub coordinating pool pledges, mutex groups, and leverage limits for syndicates and underwriters.
 
-| Function | Owner | Guardian | Committee | Public |
+| Function | Owner | Guardian | Governance | Public |
 | :--- | :---: | :---: | :---: | :---: |
-| **allocateIntentCapital()** | · | · | · | ✅ (intent matcher) |
-| **releaseIntentCapital()** | · | · | · | ✅ (intent matcher) |
-| **releaseSyndicateReservation()** | · | · | · | ✅ (policy manager) |
-| **setIntentMatcher()** | ✅ | · | · | · |
-| **setSyndicateFactory()** | ✅ | · | · | · |
-| **setCapitalPool()** | ✅ | · | · | · |
-| **setDeallocationNoticePeriod()** | ✅ | · | · | · |
-| **setSyndicateDepositCap()** | ✅ | · | · | · |
-| **setMaxLeverageRatio()** | ✅ | · | · | · |
+| **configureAllocationLimits()** | ✅ | · | · | · |
+| **setPoolMutexGroup()** | ✅ | · | · | · |
+| **setSyndicatePoolCap()** | ✅ | · | · | · |
+
+> **Note:** `configureAllocationLimits()` is a batched setter for max allocations per underwriter, max leverage ratio, cooldown period, and max exposure per pool.
 
 ### PoolRegistry
 
@@ -125,16 +125,20 @@ Registry that creates new coverage pools and manages pool configuration across t
 | Function | Owner | Guardian | Committee | Public |
 | :--- | :---: | :---: | :---: | :---: |
 | **addProtocolRiskPool()** | ✅ | · | · | · |
+| **addOptimisticOraclePool()** | ✅ | · | · | · |
 | **setPoolRiskRating()** | ✅ | · | · | · |
-| **setPoolYieldReward()** | ✅ | · | · | · |
-| **setPoolVaultCover()** | ✅ | · | · | · |
-| **setPauseState()** | ✅ | · | · | · (or RM) |
-| **setFeeRecipient()** | · | · | ✅ | · (via RM) |
+| **setIsYieldRewardPool()** | ✅ | · | · | · |
+| **setPoolCoverageCap()** | ✅ | · | · | · |
+| **setReinsurerApproval()** | ✅ | · | · | · |
+| **setPoolOracleQuestionCID()** | ✅ | · | · | · |
+| **setPauseState()** | ✅ | · | · | · (or RiskManager) |
+| **setFeeRecipient()** | · | · | · | · (RiskManager only) |
 
+---
 
-### Timelock Delays
+## Timelock Delays
 
-| Action Type | Min Delay | Exec Window | Guardian Cancel? |
+| Action Type | Min Delay | Execution Window | Guardian Cancel? |
 | :--- | :--- | :--- | :---: |
 | **Parameter Changes** | 2 days | 7 days | ✅ |
 | **Contract Upgrades** | 7 days | 7 days | ✅ |
@@ -142,7 +146,14 @@ Registry that creates new coverage pools and manages pool configuration across t
 | **Emergency Pause** | Instant | N/A | ❌ |
 | **Pool Creation** | 2 days | 7 days | ✅ |
 
+---
+
+## Related Pages
+
+- [Security & Audits](/resources/audits) - Audit reports and guarded launch strategy
+- [Governance](/governance/governance) - How proposals and voting work
+- [Smart Contracts](/contracts) - Full interface reference
 
 ---
 
-*Last updated: January 2026*
+*Last updated: February 2026*

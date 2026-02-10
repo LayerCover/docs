@@ -4,6 +4,7 @@ import type { SidebarItem } from '@/lib/content/loader'
 import { ThemeToggle } from '../ThemeToggle'
 import { MobileDocsNav } from './MobileDocsNav'
 import { DocSearch } from '../search/DocSearch'
+import { PapersDropdown } from './PapersDropdown'
 
 interface HeaderProps {
   sidebarItems?: SidebarItem[]
@@ -40,6 +41,7 @@ export function Header({ sidebarItems }: HeaderProps) {
 
           <nav className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
             <DocSearch />
+            <PapersDropdown />
             <a
               href="https://app.layercover.com"
               target="_blank"

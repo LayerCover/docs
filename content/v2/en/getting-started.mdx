@@ -4,25 +4,97 @@ description: Get up and running with LayerCover
 order: 1
 ---
 
-## Concept
+import { Callout } from '@/components/Callout'
 
-LayerCover is a fully on-chain cover protocol inspired by the Lloyd's of London marketplace. It enables capital providers (underwriters) to deploy single-sided liquidity across multiple independent risk pools, earning premiums while maintaining full control over capital allocation and risk exposure. Cover is underwritten and settled entirely by smart contracts. Payouts can be triggered at any time by policyholders through a direct 1:1 swap of distressed assets for underwriter capital, removing the need for oracles, governance votes, or subjective claims assessments. By combining modular risk assessment, flexible capital reuse, and salvage rights on payout, LayerCover delivers a capital-efficient alternative to mutualised risk pool designs, offering predictable and fully auditable protection for decentralised finance.
+## Welcome to LayerCover
 
-import { ThemedImage } from '@/components/ThemedImage'
+LayerCover is a fully on-chain cover protocol inspired by the Lloyd's of London marketplace. It replaces traditional insurance carriers with smart contracts that coordinate risk, capital, and claims - all transparently and without intermediaries.
 
-<div className="my-8">
-  <ThemedImage
-    lightSrc="/doc-assets/illustrations/design-light.png"
-    darkSrc="/doc-assets/illustrations/design-dark.png"
-    alt="LayerCover Protocol Architecture"
-    className="w-full rounded-lg border border-border"
-  />
+<div className="grid gap-3 sm:grid-cols-2 my-6 not-prose">
+  <div className="flex gap-4 items-start p-4 rounded-xl border border-border bg-gradient-to-br from-background to-blue-50/50 dark:to-blue-900/10">
+    <span className="text-2xl shrink-0 mt-0.5">🔒</span>
+    <div>
+      <h4 className="text-sm font-semibold text-foreground mb-1">Non-Custodial</h4>
+      <p className="text-sm text-muted-foreground m-0">You retain full control of your assets until a claim event</p>
+    </div>
+  </div>
+  <div className="flex gap-4 items-start p-4 rounded-xl border border-border bg-gradient-to-br from-background to-green-50/50 dark:to-green-900/10">
+    <span className="text-2xl shrink-0 mt-0.5">⚡</span>
+    <div>
+      <h4 className="text-sm font-semibold text-foreground mb-1">Transparent Claims</h4>
+      <p className="text-sm text-muted-foreground m-0">Standard pools settle instantly on-chain; parametric pools use UMA's Optimistic Oracle</p>
+    </div>
+  </div>
+  <div className="flex gap-4 items-start p-4 rounded-xl border border-border bg-gradient-to-br from-background to-purple-50/50 dark:to-purple-900/10">
+    <span className="text-2xl shrink-0 mt-0.5">📈</span>
+    <div>
+      <h4 className="text-sm font-semibold text-foreground mb-1">Capital-Efficient</h4>
+      <p className="text-sm text-muted-foreground m-0">Single-sided liquidity across independent risk pools with built-in leverage controls</p>
+    </div>
+  </div>
+  <div className="flex gap-4 items-start p-4 rounded-xl border border-border bg-gradient-to-br from-background to-amber-50/50 dark:to-amber-900/10">
+    <span className="text-2xl shrink-0 mt-0.5">🏷️</span>
+    <div>
+      <h4 className="text-sm font-semibold text-foreground mb-1">Fixed-Rate Pricing</h4>
+      <p className="text-sm text-muted-foreground m-0">Lock in exact costs upfront through an intent-based RFQ marketplace</p>
+    </div>
+  </div>
 </div>
 
-### Background
+---
 
-The global insurance industry has, for centuries, operated as a central marketplace where risk is underwritten, capital is pooled, and claims are settled according to mutually agreed terms. Lloyd's of London, founded in 1688, remains the archetype of such a marketplace where a network of syndicates and underwriters, each providing capital to cover specific risks, coordinated through a central governance framework. In decentralised finance (DeFi), the need for an equivalent mechanism is both clear and urgent. Protocol hacks, smart contract failures, oracle malfunctions, governance exploits, and other tail events have caused billions of dollars in losses in recent years. Unlike traditional finance, DeFi has no central clearinghouse or government-backed safety net. When failures occur, users are typically left with few options: absorb the loss, hope for a socialised bailout, or pursue unenforceable legal remedies.
+## Choose Your Path
 
-### Why Now
+<div className="grid gap-4 sm:grid-cols-3 my-8">
+  <a href="/policyholders" className="group block p-6 rounded-xl border border-border bg-gradient-to-br from-background to-blue-50/50 dark:to-blue-900/20 hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <span className="text-3xl mb-3 block grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">🛡️</span>
+    <h3 className="text-lg font-semibold text-foreground mb-2">Policyholders</h3>
+    <p className="text-sm text-muted-foreground m-0">Purchase coverage for your DeFi positions. Protect stablecoins, vault shares, and protocol exposure.</p>
+  </a>
+  <a href="/underwriters" className="group block p-6 rounded-xl border border-border bg-gradient-to-br from-background to-green-50/50 dark:to-green-900/20 hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <span className="text-3xl mb-3 block grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">💰</span>
+    <h3 className="text-lg font-semibold text-foreground mb-2">Underwriters</h3>
+    <p className="text-sm text-muted-foreground m-0">Provide capital to earn dual yields from premiums and DeFi strategies, managed via Syndicates.</p>
+  </a>
+  <a href="/developers" className="group block p-6 rounded-xl border border-border bg-gradient-to-br from-background to-purple-50/50 dark:to-purple-900/20 hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <span className="text-3xl mb-3 block grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">💻</span>
+    <h3 className="text-lg font-semibold text-foreground mb-2">Developers</h3>
+    <p className="text-sm text-muted-foreground m-0">Integrate LayerCover into your dApp with our SDK - as simple as 3 lines of code.</p>
+  </a>
+</div>
 
-Decentralised finance (DeFi) has matured from experimental protocols to an ecosystem securing hundreds of billions of dollars in total value locked (TVL). Institutional investors, professional market makers, and on-chain treasuries are now active participants, bringing with them higher expectations for risk management and capital protection. Yet despite this growth, the overwhelming majority of DeFi capital remains uninsured. A purpose-built, on-chain insurance primitive is required: deterministic, rules-based settlement and composable capital. LayerCover addresses this gap with a marketplace for specialised underwriting and predictable, transparent payouts.
+---
+
+
+
+```mermaid
+flowchart LR
+    Buyer["🛡️ Policyholders"]
+    Protocol["⚙️ LayerCover Protocol"]
+    UW["💰 Underwriters"]
+    Yield["📈 DeFi Yield"]
+
+    Buyer -->|"Pay premium"| Protocol
+    Protocol -->|"Policy NFT"| Buyer
+    Protocol -->|"Claim payout"| Buyer
+
+    Protocol -->|"Premium income"| UW
+    UW -->|"Deposit capital"| Protocol
+    Protocol -->|"Deploy idle capital"| Yield
+    Yield -->|"Yield returns"| UW
+
+    style Buyer fill:#3b82f620,stroke:#3b82f6,color:#3b82f6
+    style UW fill:#22c55e20,stroke:#22c55e,color:#22c55e
+    style Protocol fill:#8b5cf620,stroke:#8b5cf6,color:#8b5cf6
+    style Yield fill:#f59e0b20,stroke:#f59e0b,color:#f59e0b
+```
+
+## The Lloyd's Model, On-Chain
+
+The global insurance industry has for centuries operated through marketplace models like Lloyd's of London, where networks of syndicates provide capital to cover specific risks. DeFi needs an equivalent - protocol hacks, smart contract failures, and oracle exploits have caused billions in losses, yet the vast majority of on-chain capital remains uninsured.
+
+LayerCover addresses this gap by combining modular risk assessment, flexible capital reuse, and on-chain salvage rights into a capital-efficient alternative to mutualised risk pool designs.
+
+<Callout type="success">
+  Ready to dive in? Start with **[Policyholders](/policyholders)**, **[Underwriters](/underwriters)**, or the **[Protocol Deep Dive](/protocol)**.
+</Callout>

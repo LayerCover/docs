@@ -7,7 +7,7 @@ description: Interface for the referral and rewards system.
   View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
 </Callout>
 
-The **IReferralManager** tracks referral codes and calculates rewards for referrers and discounts for buyers. It integrates with the PolicyManager to apply these benefits during policy purchase.
+The **IReferralManager** tracks referral codes and calculates rewards for referrers. It integrates with the PolicyManager to apply referral rewards during policy purchase.
 
 ## Interface
 
@@ -16,25 +16,72 @@ The **IReferralManager** tracks referral codes and calculates rewards for referr
 pragma solidity ^0.8.20;
 
 interface IReferralManager {
+    // ==================== Core Functions ====================
+
+    /**
+     * @notice Records a referral when a policy is purchased with a referral code
+     * @dev Called by PolicyManager during policy creation
+     * @param code The referral code used (bytes32)
+     * @param buyer Address of the policy buyer
+     * @param policyId ID of the newly created policy
+     * @param premiumPaid Total premium amount paid
+     * @param referrerRewardBpsUsed Reward rate for referrer in basis points
+     * @return referrer Address of the referrer (or zero if invalid code)
+     * @return rewardAmount Reward amount credited to referrer
+     */
     function recordReferral(
         bytes32 code,
         address buyer,
         uint256 policyId,
         uint256 premiumPaid,
-        uint256 discountBpsUsed,
         uint256 referrerRewardBpsUsed
-    ) external returns (address referrer, uint256 discountAmount, uint256 rewardAmount);
+    ) external returns (address referrer, uint256 rewardAmount);
 
-    function calculateDiscountedPremium(uint256 originalPremium) external view returns (uint256);
+    // ==================== View Functions ====================
 
+    /**
+     * @notice Checks if a referral code is valid and registered
+     * @param code The referral code to validate
+     * @return True if the code is registered and active
+     */
     function isValidCode(bytes32 code) external view returns (bool);
 
+    /**
+     * @notice Gets the owner address of a referral code
+     * @param code The referral code to look up
+     * @return The address that owns this referral code
+     */
     function getReferrer(bytes32 code) external view returns (address);
 
-    function buyerDiscountBps() external view returns (uint256);
-
+    /**
+     * @notice Returns the current referrer reward rate
+     * @return Reward in basis points (e.g., 500 = 5%)
+     */
     function referrerRewardBps() external view returns (uint256);
 
-    function fundReferralReward(address referrer, uint256 amount) external;
+    // ==================== Administration ====================
+
+    /**
+     * @notice Funds a referral reward payment to a referrer
+     * @dev Called by PolicyManager to distribute rewards
+     * @param referrer Address to receive the reward
+     * @param amount Amount to fund
+     * @param policyId ID of the policy triggering the reward
+     */
+    function fundReferralReward(address referrer, uint256 amount, uint256 policyId) external;
+
+    /**
+     * @notice Returns the pending reward for a specific policy
+     * @param policyId The policy ID
+     * @return The pending reward amount
+     */
+    function getPendingPolicyReward(uint256 policyId) external view returns (uint256);
+
+    /**
+     * @notice Returns the referrer address for a specific policy
+     * @param policyId The policy ID
+     * @return The referrer address
+     */
+    function getPolicyReferrer(uint256 policyId) external view returns (address);
 }
 ```

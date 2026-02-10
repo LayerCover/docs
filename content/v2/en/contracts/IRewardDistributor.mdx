@@ -16,20 +16,62 @@ The **IRewardDistributor** handles the accounting and distribution of rewards (e
 pragma solidity ^0.8.20;
 
 interface IRewardDistributor {
+    // ==================== Distribution ====================
+
+    /**
+     * @notice Distributes rewards to a pool for pro-rata allocation
+     * @dev Called by YieldStrategyManager when yield is harvested
+     * @param poolId The pool receiving rewards
+     * @param rewardToken Address of the reward token
+     * @param rewardAmount Amount of rewards to distribute
+     * @param totalPledgeInPool Total capital pledged in the pool
+     */
     function distribute(uint256 poolId, address rewardToken, uint256 rewardAmount, uint256 totalPledgeInPool) external;
+
+    // ==================== Reward Views ====================
+
+    /**
+     * @notice Returns pending unclaimed rewards for a user
+     * @param user Address to check
+     * @param poolId The pool to check rewards for
+     * @param rewardToken The reward token address
+     * @return Amount of pending rewards
+     */
     function pendingRewards(
         address user,
         uint256 poolId,
         address rewardToken
     ) external view returns (uint256);
+
+    // ==================== Settlement ====================
+
+    /**
+     * @notice Settles rewards for a user (updates their reward accounting)
+     * @param user Address to settle for
+     * @param poolId The pool to settle
+     * @param rewardToken The reward token to settle
+     * @return Amount of rewards settled
+     */
     function settleRewards(
         address user,
         uint256 poolId,
         address rewardToken
     ) external returns (uint256);
 
+    /**
+     * @notice Claims accumulated rewards for the caller
+     * @param rewardToken The reward token to claim
+     */
     function claim(address rewardToken) external;
 
+    /**
+     * @notice Settles rewards with reinsurance adjustments
+     * @param user Address to settle for
+     * @param poolId The pool to settle
+     * @param rewardToken The reward token
+     * @param userPledge User's pledge amount for calculation
+     * @return Amount of rewards settled
+     */
     function settleRewardsForReinsurance(
         address user,
         uint256 poolId,
@@ -37,6 +79,17 @@ interface IRewardDistributor {
         uint256 userPledge
     ) external returns (uint256);
 
+    /**
+     * @notice Settles rewards with exact pledge history
+     * @dev Used for precise calculations with pledge cuts over time
+     * @param user Address to settle for
+     * @param poolId The pool to settle
+     * @param rewardToken The reward token
+     * @param initialPledge User's initial pledge amount
+     * @param cutTimes Timestamps when pledge was reduced
+     * @param cutPledges Pledge amounts after each cut
+     * @return Amount of rewards settled
+     */
     function settleRewardsExact(
         address user,
         uint256 poolId,
@@ -46,6 +99,12 @@ interface IRewardDistributor {
         uint256[] calldata cutPledges
     ) external returns (uint256);
 
+    // ==================== Administration ====================
+
+    /**
+     * @notice Sets the pool allocations contract address
+     * @param _poolAllocations Address of the PoolAllocations contract
+     */
     function setPoolAllocations(address _poolAllocations) external;
 }
 ```

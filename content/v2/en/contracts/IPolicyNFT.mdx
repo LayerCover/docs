@@ -13,8 +13,6 @@ The **IPolicyNFT** is the ERC721 token representing an active insurance policy. 
 
 ```solidity
 // SPDX-License-Identifier: BUSL-1.1
-
-// IPolicyNFT.sol (Updated Version)
 pragma solidity ^0.8.20;
 
 import {Types} from "../libraries/helpers/Types.sol";
@@ -25,20 +23,31 @@ interface IPolicyNFT {
     event PolicyUpdated(uint256 indexed policyId);
     event PolicyBurned(uint256 indexed policyId);
 
-    function mint(
-        address owner,
-        uint256 poolId,
-        uint256 coverage,
-        uint256 activationTimestamp,
-        uint128 premiumDeposit,
-        uint128 lastDrainTime,
-        uint256 claimableFrom,
-        Types.VaultCoverSnapshot memory vaultCover
-    ) external returns (uint256 policyId);
+    // ==================== Minting & Burning ====================
+
+    /**
+     * @notice Mints a new policy NFT
+     * @dev Only callable by PolicyManager
+     * @param params PolicyMintParams struct containing all mint parameters
+     * @return policyId The ID of the newly minted policy
+     */
+    function mint(Types.PolicyMintParams memory params) external returns (uint256 policyId);
     
-    // NEW: A single function to finalize multiple matured increases at once.
+    /**
+     * @notice Finalizes matured coverage increases on a policy
+     * @param policyId The policy to update
+     * @param totalAmountToAdd Total coverage amount to add
+     */
     function finalizeIncreases(uint256 policyId, uint256 totalAmountToAdd) external;
 
+    /**
+     * @notice Initializes vault cover data for a policy
+     * @param policyId Policy to initialize
+     * @param vault The ERC4626 vault being covered
+     * @param sharesInsured Number of vault shares insured
+     * @param insuredValueUSDC Value in USDC at time of purchase
+     * @param pricePerShareSnapshot Price per share at purchase
+     */
     function initializeVaultCover(
         uint256 policyId,
         address vault,
@@ -47,19 +56,75 @@ interface IPolicyNFT {
         uint256 pricePerShareSnapshot
     ) external;
     
+    /**
+     * @notice Burns (destroys) a policy NFT
+     * @dev Only callable when policy is expired or fully claimed
+     * @param policyId The policy to burn
+     */
     function burn(uint256 policyId) external;
+
+    // ==================== View Functions ====================
+
+    /**
+     * @notice Returns the owner of a policy
+     * @param policyId Policy ID to query
+     * @return Address of the policy owner
+     */
     function ownerOf(uint256 policyId) external view returns (address);
+
+    /**
+     * @notice Returns full policy data
+     * @param policyId Policy ID to query
+     * @return Policy struct with all policy details
+     */
     function getPolicy(uint256 policyId) external view returns (Types.Policy memory);
+
+    // ==================== State Updates ====================
+
+    /**
+     * @notice Updates the premium account for a policy
+     * @param policyId Policy to update
+     * @param newDeposit New premium deposit balance
+     * @param newDrainTime New last drain timestamp
+     */
     function updatePremiumAccount(uint256 policyId, uint128 newDeposit, uint128 newDrainTime) external;
+
+    /**
+     * @notice Reduces coverage on a policy (partial claim or voluntary reduction)
+     * @param id Policy ID
+     * @param reductionAmount Amount to reduce coverage by
+     */
     function reduceCoverage(uint256 id, uint256 reductionAmount) external;
+
+    /**
+     * @notice Marks a policy as voided (invalid due to non-payment or fraud)
+     * @param policyId Policy to void
+     * @param voided True to void, false to un-void
+     */
     function setPolicyVoided(uint256 policyId, bool voided) external;
+
+    /**
+     * @notice Initializes an intent-based policy with underwriter details
+     * @param policyId Policy to initialize
+     * @param data IntentPolicyData struct containing underwriter, rate, end time, etc.
+     * @param cancellationPenaltyBps Penalty in basis points for early cancellation
+     */
     function initializeIntentPolicy(
         uint256 policyId,
-        address underwriter,
-        uint32 fixedRateBps,
-        uint64 endTime,
-        bytes32 reservationKey
+        Types.IntentPolicyData memory data,
+        uint16 cancellationPenaltyBps
     ) external;
+
+    /**
+     * @notice Extends the end time of an intent policy
+     * @param policyId Policy to extend
+     * @param newEndTime New coverage end timestamp
+     */
     function extendIntentEndTime(uint256 policyId, uint64 newEndTime) external;
 }
 ```
+
+## Related Documentation
+
+- [IPolicyManager](/contracts/IPolicyManager) - Creates and manages policies
+- [Buying Cover](/policyholders/buying-cover) - How policies work

@@ -7,7 +7,7 @@ description: Interface for the central registry of underwriting pools.
   View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
 </Callout>
 
-The **IPoolRegistry** is the source of truth for all underwriting pools. It stores static configuration data (e.g., risk rating, fee recipient) and dynamic state (e.g., pause status) for each pool.
+The **IPoolRegistry** is the source of truth for all underwriting pools. It stores static configuration data (e.g., risk rating, fee recipient) and dynamic state (e.g., pause status, coverage sold) for each pool. It supports both traditional vault cover pools and optimistic oracle pools.
 
 ## Interface
 
@@ -21,53 +21,230 @@ import {Types} from "../libraries/helpers/Types.sol";
 /**
  * @title IPoolRegistry
  * @notice Interface for the PoolRegistry contract.
- * @dev CORRECTED: Removed duplicate function declarations and unused enums.
- * The RiskRating enum is now centralized in Types.
  */
 interface IPoolRegistry {
-    // --- Functions ---
+    // ==================== View Functions ====================
 
-    function isYieldRewardPool(uint256 poolId) external view returns (bool);
-
-
-
-    function updateCoverageSold(uint256 poolId, uint256 amount, bool isSale) external;
-
+    /**
+     * @notice Returns the total number of registered pools
+     * @return Count of pools in the registry
+     */
     function getPoolCount() external view returns (uint256);
 
-    function setPauseState(uint256 poolId, bool isPaused) external;
-
-    function setFeeRecipient(uint256 poolId, address recipient) external;
-
-    function setPoolRiskRating(uint256 poolId, Types.RiskRating newRating) external;
-
-    function setPoolUsesVaultCover(uint256 poolId, bool usesVaultCover) external;
-
-    function poolUsesVaultCover(uint256 poolId) external view returns (bool);
-
+    /**
+     * @notice Returns the fee recipient address for a pool
+     * @param poolId The pool to query
+     * @return Address receiving protocol fees for this pool
+     */
     function getPoolFeeRecipient(uint256 poolId) external view returns (address);
 
-    function getPoolStaticData(uint256 poolId) external view  returns (
+    /**
+     * @notice Returns complete static configuration data for a pool
+     * @param poolId The pool to query
+     * @return protocolTokenToCover The covered protocol's token
+     * @return totalCoverageSold Total coverage currently sold
+     * @return isPaused Whether the pool is paused
+     * @return feeRecipient Address receiving fees
+     * @return claimFeeBps Claim fee in basis points
+     * @return riskRating Pool's risk rating
+     * @return useEscrow Whether pool uses escrow for claims
+     * @return isYieldRewardPool Whether pool distributes yield rewards
+     * @return coverageCap Maximum coverage allowed
+     * @return usesOptimisticOracle Whether pool uses optimistic oracle claims
+     * @return oracleQuestionCID IPFS CID for oracle question rules
+     */
+    function getPoolStaticData(uint256 poolId) external view returns (
         IERC20 protocolTokenToCover,
         uint256 totalCoverageSold,
         bool isPaused,
         address feeRecipient,
         uint256 claimFeeBps,
         Types.RiskRating riskRating,
-        bool useEscrow
+        bool useEscrow,
+        bool isYieldRewardPool,
+        uint256 coverageCap,
+        bool usesOptimisticOracle,
+        bytes32 oracleQuestionCID
     );
 
+    /**
+     * @notice Returns the risk rating for a pool
+     * @param poolId The pool to query
+     * @return The pool's current risk rating
+     */
+    function getPoolRiskRating(uint256 poolId) external view returns (Types.RiskRating);
+
+    /**
+     * @notice Returns the coverage cap for a pool
+     * @param poolId The pool to query
+     * @return Maximum coverage amount allowed
+     */
+    function getPoolCoverageCap(uint256 poolId) external view returns (uint256);
+
+    /**
+     * @notice Returns the oracle question CID for a pool
+     * @param poolId The pool to query
+     * @return IPFS CID containing claim rules
+     */
+    function getPoolOracleQuestionCID(uint256 poolId) external view returns (bytes32);
+
+    // ==================== Focused Getters (Gas-Efficient) ====================
+
+    /**
+     * @notice Check if a pool uses the optimistic oracle claim path
+     * @param poolId The pool to check
+     * @return True if pool uses optimistic oracle
+     */
+    function isOptimisticPool(uint256 poolId) external view returns (bool);
+
+    /**
+     * @notice Get pool fee configuration
+     * @param poolId The pool to query
+     * @return claimFeeBps Fee in basis points
+     * @return feeRecipient Address receiving fees
+     */
+    function getPoolFeeConfig(uint256 poolId) external view returns (uint256 claimFeeBps, address feeRecipient);
+
+    /**
+     * @notice Check if pool is paused
+     * @param poolId The pool to check
+     * @return True if paused
+     */
+    function isPoolPaused(uint256 poolId) external view returns (bool);
+
+    /**
+     * @notice Get pool's total coverage sold
+     * @param poolId The pool to query
+     * @return Total coverage currently outstanding
+     */
+    function getPoolCoverageSold(uint256 poolId) external view returns (uint256);
+
+    /**
+     * @notice Get pool's vault cover configuration
+     * @param poolId The pool to query
+     * @return protocolToken The protocol token for vault cover
+     * @return usesVaultCover Whether pool uses vault cover
+     */
+    function getPoolVaultCoverConfig(uint256 poolId) external view returns (address protocolToken, bool usesVaultCover);
+
+    // ==================== State Changes ====================
+
+    /**
+     * @notice Updates the total coverage sold for a pool
+     * @dev Called by PolicyManager when policies are created/expire
+     * @param poolId The pool to update
+     * @param amount Coverage amount to add or remove
+     * @param isSale True if adding coverage (sale), false if removing (expiry)
+     */
+    function updateCoverageSold(uint256 poolId, uint256 amount, bool isSale) external;
+
+    // ==================== Administration ====================
+
+    /**
+     * @notice Pauses or unpauses a pool
+     * @param poolId The pool to update
+     * @param isPaused True to pause, false to unpause
+     */
+    function setPauseState(uint256 poolId, bool isPaused) external;
+
+    /**
+     * @notice Sets the fee recipient for a pool
+     * @param poolId The pool to update
+     * @param recipient New fee recipient address
+     */
+    function setFeeRecipient(uint256 poolId, address recipient) external;
+
+    /**
+     * @notice Updates the risk rating for a pool
+     * @param poolId The pool to update
+     * @param newRating New risk rating
+     */
+    function setPoolRiskRating(uint256 poolId, Types.RiskRating newRating) external;
+
+    /**
+     * @notice Sets the coverage cap for a pool
+     * @param poolId The pool to update
+     * @param cap New coverage cap
+     */
+    function setPoolCoverageCap(uint256 poolId, uint256 cap) external;
+
+    /**
+     * @notice Sets the oracle question CID for a pool
+     * @param poolId The pool to update
+     * @param cid IPFS CID containing claim rules
+     */
+    function setPoolOracleQuestionCID(uint256 poolId, bytes32 cid) external;
+
+    /**
+     * @notice Registers a new vault cover underwriting pool
+     * @param protocolTokenToCover Token of the protocol to cover
+     * @param claimFeeBps Claim processing fee in basis points
+     * @param riskRating Initial risk rating
+     * @param usesVaultCover Whether this is a vault cover pool
+     * @return poolId The ID of the newly created pool
+     */
     function addProtocolRiskPool(
         address protocolTokenToCover,
-
         uint256 claimFeeBps,
-        Types.RiskRating riskRating
+        Types.RiskRating riskRating,
+        bool usesVaultCover
     ) external returns (uint256);
 
+    /**
+     * @notice Registers a new optimistic oracle pool
+     * @param claimFeeBps Claim processing fee in basis points
+     * @param riskRating Initial risk rating
+     * @param oracleQuestionCID IPFS CID for claim rules
+     * @return poolId The ID of the newly created pool
+     */
+    function addOptimisticOraclePool(
+        uint256 claimFeeBps,
+        Types.RiskRating riskRating,
+        bytes32 oracleQuestionCID
+    ) external returns (uint256);
 
+    // ==================== Reinsurer Management ====================
 
+    /**
+     * @notice Approves or revokes a reinsurer
+     * @param reinsurer Address of the reinsurer
+     * @param approved True to approve, false to revoke
+     */
+    function setReinsurerApproval(address reinsurer, bool approved) external;
 
-
-    function getPoolRiskRating(uint256 poolId) external view returns (Types.RiskRating);
+    /**
+     * @notice Checks if an address is an approved reinsurer
+     * @param reinsurer Address to check
+     * @return True if approved
+     */
+    function isApprovedReinsurer(address reinsurer) external view returns (bool);
 }
 ```
+
+## Pool Types
+
+The registry supports two main pool types:
+
+### Vault Cover Pools
+For protecting ERC4626 vault shares. Created via `addProtocolRiskPool`:
+
+| Field | Description |
+|-------|-------------|
+| `protocolTokenToCover` | The vault token being insured |
+| `usesVaultCover` | Set to `true` |
+| Claims resolved by | Committee vote or incident reporting |
+
+### Optimistic Oracle Pools
+For parametric/optimistic insurance. Created via `addOptimisticOraclePool`:
+
+| Field | Description |
+|-------|-------------|
+| `oracleQuestionCID` | IPFS CID containing claim rules |
+| `usesOptimisticOracle` | Set to `true` automatically |
+| Claims resolved by | UMA Optimistic Oracle with DVM fallback |
+
+## Related Documentation
+
+- [Pool Parameters](/resources/parameters) - Pool configuration
+- [IRiskManager](/contracts/IRiskManager) - Incident reporting
+- [IOptimisticClaimResolver](/contracts/IOptimisticClaimResolver) - Optimistic claims

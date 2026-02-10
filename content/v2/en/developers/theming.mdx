@@ -1,0 +1,109 @@
+---
+title: Custom Theming
+description: Customise the LayerCover widget to match your brand
+order: 4
+slug: developers/theming
+---
+import { Callout } from '@/components/Callout'
+
+Match the LayerCover widget to your application's design system.
+
+Match the LayerCover widget to your application's design system.
+
+---
+
+## Preset Themes
+
+Use one of the built-in presets:
+
+```tsx
+import { CoverButton, aaveTheme, compoundTheme, darkTheme } from '@layercover/sdk/react';
+
+// Aave-styled widget
+<CoverButton walletClient={walletClient} poolId={1} theme={aaveTheme} />
+
+// Compound-styled widget
+<CoverButton walletClient={walletClient} poolId={1} theme={compoundTheme} />
+```
+
+### Available Presets
+
+| Preset | Style | Best For |
+| :--- | :--- | :--- |
+| `lightTheme` | Clean, white background | Light-mode apps |
+| `darkTheme` | Dark background with subtle borders | Dark-mode apps |
+| `aaveTheme` | Aave brand colours (purple/teal) | Aave integrations |
+| `eulerTheme` | Euler brand colours | Euler integrations |
+| `compoundTheme` | Compound green palette | Compound integrations |
+| `carbonTheme` | Ultra-dark, minimal | Trading terminals |
+
+---
+
+## Custom Theme
+
+Create your own theme with `createTheme`:
+
+```tsx
+import { CoverButton, createTheme } from '@layercover/sdk/react';
+
+const myTheme = createTheme({
+  colors: {
+    primary: '#00D395',       // Buttons, accents
+    background: '#0A0F1A',    // Modal background
+    text: '#FFFFFF',          // Primary text
+    textSecondary: '#8B95A8', // Secondary text
+    border: '#1E2A3A',        // Borders and dividers
+    success: '#22C55E',       // Success states
+    error: '#EF4444',         // Error states
+  },
+  borderRadius: '12px',       // Border radius for cards
+  fontFamily: '"Inter", sans-serif',
+});
+
+<CoverButton walletClient={walletClient} poolId={1} theme={myTheme} />
+```
+
+### Theme Properties
+
+| Property | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `colors.primary` | `string` | `#3B82F6` | Primary accent colour |
+| `colors.background` | `string` | `#FFFFFF` | Modal background |
+| `colors.text` | `string` | `#111827` | Primary text colour |
+| `colors.textSecondary` | `string` | `#6B7280` | Secondary text colour |
+| `colors.border` | `string` | `#E5E7EB` | Border colour |
+| `colors.success` | `string` | `#10B981` | Success state colour |
+| `colors.error` | `string` | `#EF4444` | Error state colour |
+| `borderRadius` | `string` | `8px` | Card border radius |
+| `fontFamily` | `string` | `system-ui` | Font family |
+
+---
+
+## Dark Mode Detection
+
+The widget respects your app's dark mode automatically if you're using standard `prefers-color-scheme` or a `data-theme` attribute. You can also force a specific mode:
+
+```tsx
+<CoverButton
+  walletClient={walletClient}
+  poolId={1}
+  theme={createTheme({
+    colorMode: 'dark', // Force dark mode
+  })}
+/>
+```
+
+---
+
+## Next Steps
+
+<div className="grid gap-4 sm:grid-cols-2 my-8">
+  <a href="/developers/quickstart" className="block p-4 rounded-lg border border-border hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <h4 className="text-base font-semibold text-foreground m-0">⚡ Quickstart →</h4>
+    <p className="text-sm text-muted-foreground m-0 mt-1">Get the widget running in your dApp</p>
+  </a>
+  <a href="/developers/sdk-reference" className="block p-4 rounded-lg border border-border hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <h4 className="text-base font-semibold text-foreground m-0">📖 SDK Reference →</h4>
+    <p className="text-sm text-muted-foreground m-0 mt-1">Complete API documentation</p>
+  </a>
+</div>

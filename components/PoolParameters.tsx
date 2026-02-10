@@ -265,7 +265,7 @@ export function PoolParameters() {
                   <dd className="font-medium">{secondsToHuman(data.policySettings.coverCooldownSeconds)}</dd>
                 </div>
                 <div className="flex items-center justify-between">
-                  <dt>CAT premium share</dt>
+                  <dt>Backstop pool share</dt>
                   <dd className="font-medium">{formatBps(data.policySettings.catPremiumBps)}</dd>
                 </div>
                 <div className="flex items-center justify-between">
@@ -291,15 +291,7 @@ export function PoolParameters() {
               <h3 className="text-sm font-semibold text-muted-foreground">Capital & Underwriting</h3>
               <dl className="mt-3 space-y-2 text-sm">
                 <div className="flex items-center justify-between">
-                  <dt>Withdrawal notice</dt>
-                  <dd className="font-medium">{secondsToHuman(data.capitalSettings.withdrawalNoticeSeconds)}</dd>
-                </div>
-                <div className="flex items-center justify-between">
-                  <dt>Deallocation notice</dt>
-                  <dd className="font-medium">{secondsToHuman(data.capitalSettings.deallocationNoticeSeconds)}</dd>
-                </div>
-                <div className="flex items-center justify-between">
-                  <dt>Max allocations / underwriter</dt>
+                  <dt>Max pools / underwriter</dt>
                   <dd className="font-medium">{data.capitalSettings.maxAllocationsPerUnderwriter}</dd>
                 </div>
                 <div className="flex items-center justify-between">

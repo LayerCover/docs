@@ -160,6 +160,7 @@ export default async function DocPage({ params }: PageProps) {
   const sidebar = buildSidebar(docs)
   const headings = extractHeadings(doc.content)
   const { prev, next } = getPrevNext(docs, doc.slug)
+  const hasCustomNextSteps = doc.content.includes('## Next Steps')
 
   return (
     <div className="min-h-screen">
@@ -184,7 +185,7 @@ export default async function DocPage({ params }: PageProps) {
               <MDXContent content={doc.content} />
             </article>
 
-            <PrevNext prev={prev} next={next} />
+            {!hasCustomNextSteps && <PrevNext prev={prev} next={next} />}
           </main>
 
           {doc.frontmatter.toc !== false && headings.length > 0 && (

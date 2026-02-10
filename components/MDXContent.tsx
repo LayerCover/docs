@@ -9,11 +9,15 @@ import { CodeBlock } from './CodeBlock'
 import { FAQAccordion } from './FAQAccordion'
 import { ContractAddresses } from './ContractAddresses'
 import { PoolParameters } from './PoolParameters'
-import LayerCoverAnimation from './LayerCoverAnimation'
+// import LayerCoverAnimation from './LayerCoverAnimation'
 import { ThemedImage } from './ThemedImage'
 import { Callout } from './Callout'
 import { ExternalLinks } from './ExternalLinks'
 import { ResponsiveIframe } from './ResponsiveIframe'
+import { PremiumCalculator } from './PremiumCalculator'
+import { RiskPointsCalculator } from './RiskPointsCalculator'
+import { StepByStep } from './StepByStep'
+import { CodeSandboxEmbed } from './CodeSandboxEmbed'
 import { GlossaryLink, GlossaryTerm } from './GlossaryLink'
 
 interface FAQ {
@@ -117,16 +121,20 @@ const markdownComponents = {
       href={normalizeDocsHref(href)}
     />
   ),
-  code: ({ node, inline, className, children, ...props }: any) => {
+  code: ({ node, className, children, ...props }: any) => {
     const match = /language-(\w+)/.exec(className || '')
     const language = match ? match[1] : ''
 
+    // Detect inline code: if parent is not <pre>, it's inline
+    const isInline = node?.parent?.tagName !== 'pre' && !language
+
     // Render mermaid diagrams
-    if (language === 'mermaid' && !inline) {
+    if (language === 'mermaid') {
       return <Mermaid chart={String(children).replace(/\n$/, '')} />
     }
 
-    if (inline) {
+    // Inline code (backticks in text)
+    if (isInline) {
       return (
         <code
           className="px-1.5 py-0.5 rounded-md bg-primary/10 border border-primary/20 text-sm font-mono text-primary dark:text-primary"
@@ -162,13 +170,13 @@ const markdownComponents = {
     />
   ),
   ul: ({ node, ...props }: any) => (
-    <ul className="list-disc list-inside space-y-2 my-4 text-foreground" {...props} />
+    <ul className="list-disc list-outside pl-6 space-y-2 my-4 text-foreground" {...props} />
   ),
   ol: ({ node, ...props }: any) => (
-    <ol className="list-decimal list-inside space-y-2 my-4 text-foreground" {...props} />
+    <ol className="list-decimal list-outside pl-6 space-y-2 my-4 text-foreground" {...props} />
   ),
   li: ({ node, ...props }: any) => (
-    <li className="ml-4 text-foreground" {...props} />
+    <li className="text-foreground" {...props} />
   ),
   blockquote: ({ node, ...props }: any) => (
     <blockquote
@@ -180,6 +188,9 @@ const markdownComponents = {
 
 const remarkPluginList = [remarkGfm, remarkMath]
 const rehypePluginList = [rehypeRaw, rehypeKatex]
+// Callouts should not process $ as math delimiters
+const remarkPluginListNoMath = [remarkGfm]
+const rehypePluginListNoMath = [rehypeRaw]
 type CalloutType = 'info' | 'warning' | 'success' | 'error'
 const calloutTypes = new Set<CalloutType>(['info', 'warning', 'success', 'error'])
 
@@ -200,6 +211,10 @@ export function MDXContent({ content }: { content: string }) {
   const hasResponsiveIframe = content.includes('<ResponsiveIframe')
   const hasCallout = content.includes('<Callout')
   const hasFAQAccordion = content.includes('<FAQAccordion')
+  const hasPremiumCalculator = content.includes('<PremiumCalculator')
+  const hasRiskPointsCalculator = content.includes('<RiskPointsCalculator')
+  const hasStepByStep = content.includes('<StepByStep')
+  const hasCodeSandboxEmbed = content.includes('<CodeSandboxEmbed')
 
   // Replace component placeholders with markers
   const externalLinksData: Record<string, ExternalLinkSection[]> = {}
@@ -227,17 +242,17 @@ export function MDXContent({ content }: { content: string }) {
     className?: string
   }> = []
 
-  if (hasLayerCoverAnimation) {
-    processedContent = processedContent.replace(
-      /import LayerCoverAnimation from ['"]@\/components\/LayerCoverAnimation['"]\s*\n?/g,
-      ''
-    )
+  // if (hasLayerCoverAnimation) {
+  //   processedContent = processedContent.replace(
+  //     /import LayerCoverAnimation from ['"]@\/components\/LayerCoverAnimation['"]\s*\n?/g,
+  //     ''
+  //   )
 
-    processedContent = processedContent.replace(
-      /<LayerCoverAnimation\s*\/>/g,
-      '<!-- LAYERCOVER_ANIMATION -->'
-    )
-  }
+  //   processedContent = processedContent.replace(
+  //     /<LayerCoverAnimation\s*\/>/g,
+  //     '<!-- LAYERCOVER_ANIMATION -->'
+  //   )
+  // }
 
   if (hasThemedImage) {
     // Extract ThemedImage components and their props
@@ -353,6 +368,110 @@ export function MDXContent({ content }: { content: string }) {
     )
   }
 
+  // Process PremiumCalculator
+  const premiumCalculators: Array<{ defaultCoverage?: number; defaultRate?: number; defaultDuration?: number }> = []
+  if (hasPremiumCalculator) {
+    processedContent = processedContent.replace(
+      /import \{ PremiumCalculator \} from ['"]@\/components\/PremiumCalculator['"]\s*\n?/g,
+      ''
+    )
+    const pcRegex = /<PremiumCalculator(?:\s+defaultCoverage=\{(\d+)\})?(?:\s+defaultRate=\{(\d+)\})?(?:\s+defaultDuration=\{(\d+)\})?\s*\/>/g
+    let pcMatch
+    while ((pcMatch = pcRegex.exec(processedContent)) !== null) {
+      premiumCalculators.push({
+        defaultCoverage: pcMatch[1] ? parseInt(pcMatch[1], 10) : undefined,
+        defaultRate: pcMatch[2] ? parseInt(pcMatch[2], 10) : undefined,
+        defaultDuration: pcMatch[3] ? parseInt(pcMatch[3], 10) : undefined,
+      })
+    }
+    let counter = 0
+    processedContent = processedContent.replace(pcRegex, () => `<!-- PREMIUM_CALCULATOR_${counter++} -->`)
+  }
+
+  // Process RiskPointsCalculator
+  const riskCalculators: Array<{ defaultDeposit?: number; maxBudget?: number }> = []
+  if (hasRiskPointsCalculator) {
+    processedContent = processedContent.replace(
+      /import \{ RiskPointsCalculator \} from ['"]@\/components\/RiskPointsCalculator['"]\s*\n?/g,
+      ''
+    )
+    const rcRegex = /<RiskPointsCalculator(?:\s+defaultDeposit=\{(\d+)\})?(?:\s+maxBudget=\{(\d+)\})?\s*\/>/g
+    let rcMatch
+    while ((rcMatch = rcRegex.exec(processedContent)) !== null) {
+      riskCalculators.push({
+        defaultDeposit: rcMatch[1] ? parseInt(rcMatch[1], 10) : undefined,
+        maxBudget: rcMatch[2] ? parseInt(rcMatch[2], 10) : undefined,
+      })
+    }
+    let counter = 0
+    processedContent = processedContent.replace(rcRegex, () => `<!-- RISK_CALCULATOR_${counter++} -->`)
+  }
+
+  // Process StepByStep
+  const stepBySteps: Array<{ steps: Array<{ title: string; description: string; tip?: string }> }> = []
+  if (hasStepByStep) {
+    processedContent = processedContent.replace(
+      /import \{ StepByStep \} from ['"]@\/components\/StepByStep['"]\s*\n?/g,
+      ''
+    )
+    const sbsRegex = /<StepByStep\s+steps=\{(\[[\s\S]*?\])\}\s*\/>/g
+    let sbsMatch
+    while ((sbsMatch = sbsRegex.exec(processedContent)) !== null) {
+      try {
+        // eslint-disable-next-line no-new-func
+        const parsed = new Function(`return (${sbsMatch[1]})`)()
+        stepBySteps.push({ steps: Array.isArray(parsed) ? parsed : [] })
+      } catch (e) {
+        stepBySteps.push({ steps: [] })
+      }
+    }
+    let counter = 0
+    processedContent = processedContent.replace(sbsRegex, () => `<!-- STEP_BY_STEP_${counter++} -->`)
+  }
+
+  // Process CodeSandboxEmbed
+  const codeSandboxes: Array<{ url: string; title?: string; height?: number }> = []
+  if (hasCodeSandboxEmbed) {
+    processedContent = processedContent.replace(
+      /import \{ CodeSandboxEmbed \} from ['"]@\/components\/CodeSandboxEmbed['"]\s*\n?/g,
+      ''
+    )
+    const csRegex = /<CodeSandboxEmbed\s+url="([^"]+)"(?:\s+title="([^"]+)")?(?:\s+height=\{(\d+)\})?\s*\/>/g
+    let csMatch
+    while ((csMatch = csRegex.exec(processedContent)) !== null) {
+      codeSandboxes.push({
+        url: csMatch[1],
+        title: csMatch[2] || undefined,
+        height: csMatch[3] ? parseInt(csMatch[3], 10) : undefined,
+      })
+    }
+    let counter = 0
+    processedContent = processedContent.replace(csRegex, () => `<!-- CODE_SANDBOX_${counter++} -->`)
+  }
+
+  // Process raw HTML div blocks (card grids, badge rows, etc.)
+  // These must bypass ReactMarkdown to avoid hydration mismatches from
+  // block-level elements (div, h3, p) inside inline elements (a)
+  const rawHtmlBlocks: string[] = []
+  {
+    const rawDivRegex = /^<div\s+className="[^"]*"[^>]*>[\s\S]*?^<\/div>/gm
+    let rawMatch
+    const rawMatches: Array<{ index: number; match: string }> = []
+    while ((rawMatch = rawDivRegex.exec(processedContent)) !== null) {
+      rawMatches.push({ index: rawMatch.index, match: rawMatch[0] })
+    }
+    // Process in reverse to preserve indices
+    for (let i = rawMatches.length - 1; i >= 0; i--) {
+      const blockIndex = rawHtmlBlocks.length
+      rawHtmlBlocks.unshift(rawMatches[i].match)
+      const placeholder = `<!-- RAW_HTML_${blockIndex} -->`
+      processedContent =
+        processedContent.substring(0, rawMatches[i].index) +
+        placeholder +
+        processedContent.substring(rawMatches[i].index + rawMatches[i].match.length)
+    }
+  }
+
   // Process FAQAccordion components
   const faqAccordions: FAQ[][] = []
   if (hasFAQAccordion) {
@@ -432,7 +551,7 @@ export function MDXContent({ content }: { content: string }) {
   const hasFAQs = faqs.length > 0
 
   const placeholderRegex =
-    /(<!-- CONTRACT_ADDRESSES -->|<!-- POOL_PARAMETERS -->|<!-- THEMED_IMAGE_\d+ -->|<!-- RESPONSIVE_IFRAME_\d+ -->|<!-- LAYERCOVER_ANIMATION -->|<!-- EXTERNAL_LINKS_[A-Za-z0-9_$]+ -->|<!-- CALLOUT_\d+ -->|<!-- FAQ_ACCORDION_\d+ -->)/
+    /(<!-- CONTRACT_ADDRESSES -->|<!-- POOL_PARAMETERS -->|<!-- THEMED_IMAGE_\d+ -->|<!-- RESPONSIVE_IFRAME_\d+ -->|<!-- LAYERCOVER_ANIMATION -->|<!-- EXTERNAL_LINKS_[A-Za-z0-9_$]+ -->|<!-- CALLOUT_\d+ -->|<!-- FAQ_ACCORDION_\d+ -->|<!-- PREMIUM_CALCULATOR_\d+ -->|<!-- RISK_CALCULATOR_\d+ -->|<!-- STEP_BY_STEP_\d+ -->|<!-- CODE_SANDBOX_\d+ -->|<!-- RAW_HTML_\d+ -->)/
   const introductionSegments = beforeFAQ.split(placeholderRegex).filter((segment) => segment !== '')
 
   return (
@@ -455,13 +574,13 @@ export function MDXContent({ content }: { content: string }) {
             )
           }
 
-          if (segment === '<!-- LAYERCOVER_ANIMATION -->') {
-            return (
-              <div key={`layercover-animation-${index}`} className="my-12">
-                <LayerCoverAnimation />
-              </div>
-            )
-          }
+          // if (segment === '<!-- LAYERCOVER_ANIMATION -->') {
+          //   return (
+          //     <div key={`layercover-animation-${index}`} className="my-12">
+          //       <LayerCoverAnimation />
+          //     </div>
+          //   )
+          // }
 
           const externalLinksMatch = segment.match(/<!-- EXTERNAL_LINKS_([A-Za-z0-9_$]+) -->/)
           if (externalLinksMatch) {
@@ -515,8 +634,8 @@ export function MDXContent({ content }: { content: string }) {
               return (
                 <Callout key={`callout-${index}`} type={type} emoji={props.emoji}>
                   <ReactMarkdown
-                    remarkPlugins={remarkPluginList}
-                    rehypePlugins={rehypePluginList}
+                    remarkPlugins={remarkPluginListNoMath}
+                    rehypePlugins={rehypePluginListNoMath}
                     components={markdownComponents}
                   >
                     {props.content}
@@ -535,6 +654,59 @@ export function MDXContent({ content }: { content: string }) {
                 <div key={`faq-accordion-${index}`} className="my-6">
                   <FAQAccordion faqs={faqList} />
                 </div>
+              )
+            }
+          }
+
+          const premCalcMatch = segment.match(/<!-- PREMIUM_CALCULATOR_(\d+) -->/)
+          if (premCalcMatch) {
+            const idx = parseInt(premCalcMatch[1], 10)
+            const props = premiumCalculators[idx]
+            if (props) {
+              return <PremiumCalculator key={`premium-calc-${index}`} {...props} />
+            }
+          }
+
+          const riskCalcMatch = segment.match(/<!-- RISK_CALCULATOR_(\d+) -->/)
+          if (riskCalcMatch) {
+            const idx = parseInt(riskCalcMatch[1], 10)
+            const props = riskCalculators[idx]
+            if (props) {
+              return <RiskPointsCalculator key={`risk-calc-${index}`} {...props} />
+            }
+          }
+
+          const sbsMatch = segment.match(/<!-- STEP_BY_STEP_(\d+) -->/)
+          if (sbsMatch) {
+            const idx = parseInt(sbsMatch[1], 10)
+            const props = stepBySteps[idx]
+            if (props && props.steps.length > 0) {
+              return <StepByStep key={`step-by-step-${index}`} steps={props.steps} />
+            }
+          }
+
+          const csbMatch = segment.match(/<!-- CODE_SANDBOX_(\d+) -->/)
+          if (csbMatch) {
+            const idx = parseInt(csbMatch[1], 10)
+            const props = codeSandboxes[idx]
+            if (props) {
+              return <CodeSandboxEmbed key={`code-sandbox-${index}`} {...props} />
+            }
+          }
+
+          const rawHtmlMatch = segment.match(/<!-- RAW_HTML_(\d+) -->/)
+          if (rawHtmlMatch) {
+            const idx = parseInt(rawHtmlMatch[1], 10)
+            const html = rawHtmlBlocks[idx]
+            if (html) {
+              // Convert className to class for raw HTML rendering
+              const converted = html.replace(/className=/g, 'class=')
+              return (
+                <div
+                  key={`raw-html-${index}`}
+                  className="not-prose"
+                  dangerouslySetInnerHTML={{ __html: converted }}
+                />
               )
             }
           }

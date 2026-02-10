@@ -1,0 +1,479 @@
+---
+title: Headless API Reference
+description: REST API endpoints for 3rd party integrations without UI components
+order: 5
+sidebar: API Reference
+---
+
+import { Callout } from '@/components/Callout'
+
+Build custom integrations using our REST API. Users sign transactions with their own wallet (MetaMask, etc.).
+
+<Callout type="info">
+  **Base URL:** **https://app.layercover.com** (testnet: **http://localhost:3001**)
+</Callout>
+
+---
+
+## Integration Flow
+
+```
+1. GET /api/pools/list           → List available pools
+2. GET /api/quote                → Get pricing
+3. POST /api/purchase/prepare    → Get transaction calldata
+4. User signs via wallet         → Submit to blockchain
+5. POST /api/purchase/confirm    → Update quote capacity
+```
+
+---
+
+## GET /api/quote
+
+Returns pricing for a coverage quote.
+
+### Request
+
+```
+GET /api/quote?poolId=1&amount=100000000&duration=12&deployment=base_sepolia_usdc
+```
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| **poolId** | number | Yes | Pool ID to quote |
+| **amount** | string | Yes | Coverage amount in smallest unit (wei) |
+| **duration** | number | Yes | Duration in weeks |
+| **deployment** | string | No | Deployment name (default: **base_sepolia_usdc**) |
+
+### Response
+
+```json
+{
+  "success": true,
+  "quote": {
+    "poolId": 1,
+    "coverageAmount": "100000000",
+    "durationWeeks": 12,
+    "durationSeconds": 7257600,
+    "premiumRateBps": 100,
+    "premiumRatePercent": 1,
+    "premiumAmount": "229979",
+    "availableCapacity": "650697000000",
+    "quotesUsed": [
+      {
+        "quoteId": "0x52f1985F...1767528715765",
+        "syndicateName": "ClearStar",
+        "amount": "100000000",
+        "rateBps": 100
+      }
+    ]
+  }
+}
+```
+
+### Example
+
+```bash
+curl "https://app.layercover.com/api/quote?poolId=1&amount=100000000&duration=12"
+```
+
+---
+
+## POST /api/purchase/prepare
+
+Returns unsigned transaction calldata for wallet submission.
+
+### Request
+
+```json
+POST /api/purchase/prepare
+Content-Type: application/json
+
+{
+  "quoteId": "0x52f1985F...1767528715765",
+  "amount": "100000000",
+  "durationWeeks": 12,
+  "buyerAddress": "0xYourWalletAddress",
+  "referralCode": "0x1234..."  // optional
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| **quoteId** | string | Yes | Quote ID from **/api/quote** response |
+| **amount** | string | Yes | Coverage amount in smallest unit |
+| **durationWeeks** | number | Yes | Duration in weeks |
+| **buyerAddress** | string | Yes | User's wallet address |
+| **referralCode** | string | No | Your referral code (bytes32) |
+
+### Response
+
+```json
+{
+  "success": true,
+  "transactions": {
+    "approval": {
+      "to": "0xTokenAddress...",
+      "data": "0x095ea7b3...",
+      "description": "Approve USDC spending"
+    },
+    "postBuyOrder": {
+      "to": "0xIntentOrderBook...",
+      "data": "0xe14fc78e...",
+      "description": "Post buy order to orderbook"
+    },
+    "fillBuyOrderParams": {
+      "to": "0xIntentOrderBook...",
+      "offerRateBps": 100,
+      "fillAmount": "100000000",
+      "reserveIntent": { ... },
+      "reserveSignature": "0x...",
+      "description": "Fill params (use after postBuyOrder)"
+    }
+  },
+  "quote": {
+    "premiumAmount": "229979",
+    "premiumWithBuffer": "241477"
+  },
+  "expiresAt": "2026-01-05T11:34:35.000Z",
+  "chainId": 84532
+}
+```
+
+### Submitting Transactions
+
+Use the returned calldata with ethers, wagmi, or raw **eth_sendTransaction**:
+
+```javascript
+// 1. Approval transaction
+await signer.sendTransaction({
+  to: response.transactions.approval.to,
+  data: response.transactions.approval.data
+});
+
+// 2. Purchase transaction
+await signer.sendTransaction({
+  to: response.transactions.postBuyOrder.to,
+  data: response.transactions.postBuyOrder.data
+});
+```
+
+---
+
+## POST /api/purchase/confirm
+
+Updates quote capacity after a purchase is confirmed on-chain.
+
+### Request
+
+```json
+POST /api/purchase/confirm
+Content-Type: application/json
+
+{
+  "quoteId": "0x52f1985F...1767528715765",
+  "txHash": "0xabc123...",
+  "filledAmount": "100000000"
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "quoteId": "0x52f1985F...1767528715765",
+  "remainingCapacity": "13829000000",
+  "quoteStatus": "active",
+  "txHash": "0xabc123..."
+}
+```
+
+---
+
+## GET /api/pools/list
+
+Returns all available pools with metadata.
+
+### Request
+
+```
+GET /api/pools/list?deployment=base_sepolia_usdc
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "pools": [
+    {
+      "id": 1,
+      "name": "Aave USDC",
+      "tokenSymbol": "USDC",
+      "totalCoverageSold": "50000000000",
+      "availableCapacity": "650000000000",
+      "lowestQuoteRateBps": 100
+    }
+  ]
+}
+```
+
+---
+
+## Error Responses
+
+All error responses include a machine-readable `code` field for programmatic handling:
+
+```json
+{
+  "error": "Human-readable error message",
+  "code": "MISSING_FIELDS"
+}
+```
+
+Some errors include additional context:
+
+```json
+{
+  "error": "Quote exceeds available syndicate capacity",
+  "code": "CAPACITY_EXCEEDED",
+  "currentExposure": "50000000000",
+  "availableCapacity": "10000000000"
+}
+```
+
+### Error Codes
+
+| Code | HTTP | Description |
+|------|------|-------------|
+| `MISSING_PARAMS` | 400 | Missing required query parameters (poolId or syndicateAddress) |
+| `MISSING_FIELDS` | 400 | Missing required fields in request body |
+| `MISSING_QUOTE_ID` | 400 | quoteId parameter is required |
+| `MISSING_POOL_IDS` | 400 | poolIds parameter is required (batch endpoint) |
+| `MISSING_UPDATES` | 400 | updates array is required (fill endpoint) |
+| `MISSING_DEPLOYMENT` | 400 | deployment is required (clear endpoint) |
+| `MISSING_SYNDICATE_ADDRESS` | 400 | syndicateAddress is required (exposure endpoint) |
+| `MISSING_CAPACITY` | 400 | currentCapacity is required |
+| `INVALID_POOL_IDS` | 400 | No valid pool IDs provided |
+| `INVALID_DURATION` | 400 | Invalid duration in coverageIntent |
+| `INVALID_UPDATE` | 400 | Invalid fill update structure |
+| `INVALID_CAPACITY` | 400 | Invalid currentCapacity value |
+| `QUOTE_EXPIRED` | 400 | Quote expiry must be in the future |
+| `QUOTE_CONSUMED` | 400 | Quote has been fully consumed |
+| `QUOTE_NOT_FOUND` | 404 | Quote with given ID not found |
+| `CAPACITY_EXCEEDED` | 400 | Quote exceeds syndicate's on-chain capacity |
+| `NO_UPDATES` | 400 | No quote updates provided |
+| `INTERNAL_ERROR` | 500 | Server error |
+
+<Callout type="info">
+  Use `code` for programmatic branching (e.g., retry on `INTERNAL_ERROR`, show capacity UI on `CAPACITY_EXCEEDED`).
+  Use `error` for user-facing messages.
+</Callout>
+
+---
+
+## Referral Codes
+
+Earn 5% of premiums by passing your referral code to **/api/purchase/prepare**:
+
+```json
+{
+  "quoteId": "...",
+  "amount": "100000000",
+  "durationWeeks": 12,
+  "buyerAddress": "0x...",
+  "referralCode": "0x1234567890abcdef..."
+}
+```
+
+<Callout type="info">
+  **Register for a referral code** at [app.layercover.com](https://app.layercover.com/referral)
+</Callout>
+
+---
+
+## Quote Submission (For Underwriters)
+
+Syndicates can programmatically submit coverage quotes to the orderbook.
+
+### POST /api/quotes
+
+Submit a new coverage quote.
+
+#### Request
+
+```json
+POST /api/quotes
+Content-Type: application/json
+
+{
+  "poolId": 1,
+  "deployment": "base_sepolia_usdc",
+  "syndicateAddress": "0xYourSyndicateVault...",
+  "coverageAmount": "10000000000",
+  "premiumRateBps": 500,
+  "minDurationWeeks": 4,
+  "maxDurationWeeks": 12,
+  "reserveIntent": {
+    "solver": "0xYourAddress...",
+    "underwriter": "0xYourSyndicateVault...",
+    "poolId": 1,
+    "minCoverageDuration": 2419200,
+    "maxCoverageDuration": 7257600,
+    "coverageAmount": "10000000000",
+    "minFillAmount": "10000000000",
+    "allowPartialFill": false,
+    "reservationExpiry": 1736265600,
+    "nonce": "1736179200000"
+  },
+  "signature": "0xReserveIntentSignature...",
+  "coverageIntent": {
+    "maker": "0xYourSyndicateVault...",
+    "poolId": 1,
+    "coverageAmount": "10000000000",
+    "premiumRateBps": 500,
+    "minDuration": 2419200,
+    "maxDuration": 7257600,
+    "nonce": "1736179200000",
+    "expiry": 1736265600,
+    "salt": "0x..."
+  },
+  "intentSignature": "0xCoverageIntentSignature..."
+}
+```
+
+#### Response
+
+```json
+{
+  "success": true,
+  "quote": {
+    "id": "0xSyndicate...-1736179200000-0x...",
+    "poolId": 1,
+    "syndicateAddress": "0x...",
+    "coverageAmount": "10000000000",
+    "premiumRateBps": 500,
+    "status": "active"
+  }
+}
+```
+
+### GET /api/quotes/exposure
+
+Get total quoted exposure for a syndicate.
+
+```
+GET /api/quotes/exposure?syndicateAddress=0x...
+```
+
+#### Response
+
+```json
+{
+  "success": true,
+  "syndicateAddress": "0x...",
+  "totalExposure": "50000000000",
+  "activeQuoteCount": 5
+}
+```
+
+### DELETE /api/quotes
+
+Cancel an existing quote.
+
+```
+DELETE /api/quotes?quoteId=0xSyndicate...-1736179200000-0x...
+```
+
+### SDK Usage
+
+```typescript
+import { LayerCoverSDK } from '@layercover/sdk';
+
+const sdk = new LayerCoverSDK(signer, policyManagerAddress, {
+  apiBaseUrl: 'https://app.layercover.com'
+});
+
+// Submit a quote
+const result = await sdk.submitQuote({
+  poolId: 1,
+  syndicateAddress: '0x...',
+  coverageAmount: ethers.parseUnits('10000', 6),
+  premiumRateBps: 500, // 5% APY
+  minDurationWeeks: 4,
+  maxDurationWeeks: 12,
+});
+
+console.log('Quote submitted:', result.quoteId);
+
+// Get exposure
+const exposure = await sdk.getSyndicateExposure('0x...');
+console.log('Total exposure:', exposure.totalExposure);
+
+// Cancel quote
+await sdk.cancelQuote(result.quoteId);
+```
+
+### EIP-712 Signing Requirements
+
+Quote submission requires two signatures:
+
+1. **ReserveIntent** (signed against Syndicate contract)
+   - Domain: `{ name: 'Syndicate', version: '1', chainId, verifyingContract: syndicateAddress }`
+   
+2. **CoverageIntent** (signed against IntentMatcher contract)
+   - Domain: `{ name: 'IntentMatcher', version: '1', chainId, verifyingContract: intentMatcherAddress }`
+
+See the SDK source for complete type definitions.
+
+---
+
+## Full Example
+
+```javascript
+const API = 'https://app.layercover.com';
+
+// 1. Get quote
+const quoteRes = await fetch(`${API}/api/quote?poolId=1&amount=100000000&duration=12`);
+const { quote } = await quoteRes.json();
+
+// 2. Prepare purchase
+const prepRes = await fetch(`${API}/api/purchase/prepare`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    quoteId: quote.quotesUsed[0].quoteId,
+    amount: '100000000',
+    durationWeeks: 12,
+    buyerAddress: userAddress,
+    referralCode: 'YOUR_REFERRAL_CODE'
+  })
+});
+const { transactions } = await prepRes.json();
+
+// 3. Submit via user's wallet
+const approvalTx = await signer.sendTransaction(transactions.approval);
+await approvalTx.wait();
+
+const purchaseTx = await signer.sendTransaction(transactions.postBuyOrder);
+await purchaseTx.wait();
+
+// 4. Confirm
+await fetch(`${API}/api/purchase/confirm`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    quoteId: quote.quotesUsed[0].quoteId,
+    txHash: purchaseTx.hash,
+    filledAmount: '100000000'
+  })
+});
+```
+
+---
+
+## Need Help?
+
+- **Test Page:** [SDK Examples](https://github.com/layercover/monorepo/tree/main/packages/sdk/examples/headless-sdk-test.html)
+- **Support:** [Discord](https://discord.gg/layercover)
+- **SDK Widget:** [SDK Integration](/sdk)

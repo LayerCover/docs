@@ -1,0 +1,168 @@
+---
+title: IPoolAllocations
+description: Interface for capital allocation tracking per syndicate.
+---
+
+<Callout type="info">
+  View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
+</Callout>
+
+The **IPoolAllocations** is the data contract that stores allocation state for underwriters. It tracks pledges, intent reservations, cooldowns, and coordinates with the reward system. This is the internal state contract, distinct from `IPoolAllocationManager` which is the user-facing entry point.
+
+## Interface
+
+```solidity
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.20;
+
+import {Types} from "../libraries/helpers/Types.sol";
+import {IYieldStrategyManager} from "./IYieldStrategyManager.sol";
+
+/**
+ * @title IPoolAllocations
+ * @notice Interface for PoolAllocations - internal state for underwriter pool allocations
+ * @dev DATA CONTRACT for allocation state. PoolAllocationManager is the USER-FACING contract.
+ */
+interface IPoolAllocations {
+    // ===== Bundled View Structs =====
+    
+    struct UnderwriterPoolView {
+        uint256 pledge;              // Amount pledged to pool
+        uint256 intentAllocation;    // Amount reserved for pending intents
+        uint256 syndicateCap;        // Maximum allocation for this syndicate
+        uint64 lastCoverageExpiry;   // When last policy expires
+        uint64 withdrawableAfter;    // Cooldown expiry timestamp
+    }
+
+    struct PoolAllocationView {
+        uint256 totalCapitalPledged;       // Total across all underwriters
+        uint256 capitalPendingWithdrawal;  // Capital in withdrawal cooldown
+        uint256 capitalAllocatedToIntents; // Reserved for pending intents
+        uint256 underwriterCount;          // Number of underwriters in pool
+        address[] activeAdapters;          // Yield adapters with capital
+        uint256[] capitalPerAdapter;       // Capital per adapter
+    }
+
+    // ===== Configuration =====
+
+    /**
+     * @notice Configures allocation limits via bundled config
+     * @param config AllocationLimitsConfig struct
+     */
+    function configureAllocationLimits(Types.AllocationLimitsConfig memory config) external;
+
+    /**
+     * @notice Sets mutual exclusion groups for pools
+     * @param poolIds Array of pool IDs to group
+     * @param groupId Group identifier
+     */
+    function setPoolMutexGroup(uint256[] calldata poolIds, uint256 groupId) external;
+
+    // ===== Coordination (PoolAllocationManager) =====
+
+    /**
+     * @notice Validates a proposed pool allocation
+     * @param underwriter Syndicate making allocation
+     * @param poolIds Pools to allocate to
+     * @param amounts Amounts to allocate
+     */
+    function validatePoolAllocation(
+        address underwriter,
+        uint256[] memory poolIds,
+        uint256[] memory amounts
+    ) external view;
+
+    /**
+     * @notice Records a new pool allocation
+     * @param underwriter Syndicate making allocation
+     * @param poolId Pool being allocated to
+     * @param amount Amount allocated
+     * @param adapter Yield adapter for the capital
+     */
+    function recordPoolAllocation(
+        address underwriter,
+        uint256 poolId,
+        uint256 amount,
+        address adapter
+    ) external;
+
+    /**
+     * @notice Records pool deallocation
+     */
+    function recordPoolDeallocation(
+        address underwriter,
+        uint256 poolId,
+        uint256 deallocAmount,
+        uint256 newPledge,
+        address adapter
+    ) external;
+
+    // ===== Capital Hooks =====
+
+    function onCapitalDeposited(address underwriter, uint256 amount) external;
+    function onCapitalWithdrawn(address underwriter, uint256 principalComponentRemoved, bool isFullWithdrawal) external;
+    function onLossRealized(address underwriter, uint256 principalComponentReduced) external;
+
+    // ===== Intent Lifecycle =====
+
+    /**
+     * @notice Reserves capital for a pending intent
+     * @return reservedShares Shares reserved
+     */
+    function allocateIntentCapital(
+        address underwriter,
+        uint256 poolId,
+        uint256 coverageAmount,
+        uint32 coverageDuration,
+        bytes32 reservationKey
+    ) external returns (uint256 reservedShares);
+
+    /**
+     * @notice Releases reserved intent capital
+     */
+    function releaseIntentCapital(
+        address underwriter,
+        uint256 poolId,
+        uint256 coverageAmount,
+        bytes32 reservationKey
+    ) external;
+
+    /**
+     * @notice Converts intent reservation to active policy
+     */
+    function transitionIntentToPolicy(
+        address underwriter,
+        uint256 poolId,
+        uint256 coverageAmount
+    ) external;
+
+    // ===== Bundled Views =====
+
+    /**
+     * @notice Returns detailed view of underwriter's pool position
+     */
+    function getUnderwriterPoolDetailedView(address underwriter, uint256 poolId) 
+        external view returns (UnderwriterPoolView memory);
+
+    /**
+     * @notice Returns detailed view of pool allocations
+     */
+    function getPoolAllocationDetails(uint256 poolId) 
+        external view returns (PoolAllocationView memory);
+
+    // ===== Common Views =====
+
+    function getUnderwriterAllocations(address user) external view returns (uint256[] memory);
+    function getTotalCapitalPledgedToPool(uint256 poolId) external view returns (uint256);
+    function getPledge(address user, uint256 poolId) external view returns (uint256);
+    function isAllocatedToPool(address user, uint256 poolId) external view returns (bool);
+    function canWithdrawFromPool(address underwriter, uint256 poolId) external view returns (bool);
+    function cooldownPeriod() external view returns (uint64);
+}
+```
+
+## Related Documentation
+
+- [ISyndicate](/contracts/ISyndicate) - Uses allocations for underwriting
+- [IIntentMatcher](/contracts/IIntentMatcher) - Creates intent reservations
+- [Syndicates](/underwriters/syndicates) - Capital allocation concept

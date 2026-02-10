@@ -1,0 +1,96 @@
+---
+title: Risk Assessment
+description: Evaluating risk pools before allocating capital
+order: 4
+slug: underwriters/risk-assessment
+---
+
+import { Callout } from '@/components/Callout'
+
+<Callout type="info">
+  **TL;DR:** Every pool has a risk rating (AAA–C) that determines its risk cost. Lower risk = more leverage capacity. Evaluate pools before allocating.
+</Callout>
+
+## Risk Ratings
+
+Every risk pool is assigned a rating based on the protocol it covers, its audit history, TVL, and operational maturity.
+
+| Rating | Risk Cost | Leverage | Description |
+| :--- | :--- | :--- | :--- |
+| ✅ AAA | 10 | 10× | Battle-tested protocols (Aave, Compound). Multiple audits, years of operation, high TVL |
+| ✅ AA | 20 | 5× | Well-established protocols with strong track records |
+| ⚠️ A | 30 | 3.3× | Solid protocols with some operational history |
+| ⚠️ BBB | 50 | 2× | Mid-tier protocols, newer or less audited |
+| 🚨 BB | 70 | 1.4× | Higher risk, limited audit coverage |
+| 🚨 B | 85 | 1.2× | Elevated risk, emerging protocols |
+| 🚨 C | 100 | 1× | Maximum risk, no leverage permitted |
+
+---
+
+## Evaluating a Pool
+
+Before allocating capital, assess these dimensions:
+
+### 1. Protocol Security
+
+- **Audit count** - How many independent audits has the covered protocol completed?
+- **Bug bounty** - Is there an active bug bounty program?
+- **Incident history** - Has the protocol been exploited before?
+- **Code maturity** - How long has the code been deployed without changes?
+
+### 2. Pool Economics
+
+- **Premium rate** - What APR are policyholders paying?
+- **Utilisation** - What percentage of the pool's capacity is currently backing active policies?
+- **Term distribution** - Are policies short-term (30d) or long-term (90d)?
+
+### 3. Correlation Risk
+
+- **Mutex groups** - Is this pool correlated with other pools you're already backing?
+- **Asset correlation** - Does the covered asset share smart contract risk with your other allocations?
+
+<Callout type="warning">
+  **Watch for correlation.** Backing three pools that all cover Aave products looks diversified but is essentially concentrated on a single smart contract risk. Check mutex groups before allocating.
+</Callout>
+
+---
+
+## Risk Points Budget
+
+Your risk points budget (default: 100) limits total exposure. Each allocation consumes points proportional to the pool's risk cost and your allocation size:
+
+$$\text{Points Used} = \text{Risk Cost} \times \frac{\text{Allocation Amount}}{\text{Total Deposit}}$$
+
+### Budget Optimisation Strategy
+
+| Strategy | Pool Mix | Total Leverage | Risk Profile |
+| :--- | :--- | :--- | :--- |
+| **Conservative** | All AAA/AA pools | 5–10× | Low premium, low risk |
+| **Balanced** | Mix of AAA, A, BBB | 2–4× | Moderate premium, moderate risk |
+| **Aggressive** | Heavy BBB/BB allocation | 1–2× | High premium, high risk |
+
+---
+
+## Monitoring Active Allocations
+
+After allocating, continue monitoring:
+
+- **Incident reports** - Are any of your pools under investigation?
+- **Premium inflow** - Are policies being purchased against your pools?
+- **Risk rating changes** - Has the protocol been re-rated?
+- **Capacity utilisation** - Is the pool nearing capacity limits?
+
+---
+
+## Next Steps
+
+<div className="grid gap-4 sm:grid-cols-2 my-8">
+  <a href="/underwriters/capital-and-leverage" className="block p-4 rounded-lg border border-border hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <h4 className="text-base font-semibold text-foreground m-0">📊 Capital & Leverage →</h4>
+    <p className="text-sm text-muted-foreground m-0 mt-1">How capital pledges and leverage work</p>
+  </a>
+  <a href="/underwriters/claims-and-salvage" className="block p-4 rounded-lg border border-border hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <h4 className="text-base font-semibold text-foreground m-0">🔄 Claims & Salvage →</h4>
+    <p className="text-sm text-muted-foreground m-0 mt-1">What happens when claims hit your capital</p>
+  </a>
+</div>

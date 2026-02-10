@@ -4,7 +4,37 @@ description: Software licenses and usage terms for LayerCover protocol
 order: 9
 sidebar: Code Licensing
 ---
+import { Callout } from '@/components/Callout'
 
-LayerCover core smart contracts are released under the **Business Source License 1.1 (BUSL-1.1)**. The code is fully auditable, but commercial use or forking is restricted until the specific Change Date defined in each repository.
+<Callout type="warning">
+  **Commercial use of LayerCover smart contracts is restricted** under the Business Source License until the Change Date defined in each repository.
+</Callout>
 
-All other assets including frontends, SDKs, and off-chain infrastructure remain **closed source**.
+## License Summary
+
+| Component | License | Commercial Use | Source |
+| :--- | :--- | :---: | :--- |
+| **Smart Contracts** | BUSL-1.1 | ❌ Until Change Date | Fully auditable, forking restricted |
+| **SDK** | Closed Source | ❌ | Published via npm for integration only |
+| **Frontend** | Closed Source | ❌ | Proprietary application code |
+| **Documentation** | CC BY 4.0 | ✅ With attribution | Content may be referenced and shared |
+| **Brand Assets** | Proprietary | ❌ | See [Brand Kit](/resources/brand-kit) for usage guidelines |
+
+---
+
+## Business Source License (BUSL-1.1)
+
+LayerCover core smart contracts are released under the **Business Source License 1.1**. This means:
+
+- ✅ **Auditable** - Source code is fully readable and verifiable
+- ✅ **Testable** - You can compile, test, and study the contracts locally
+- ❌ **No forking** - Commercial use or deployment of modified contracts is restricted
+- 🗓️ **Change Date** - Each repository specifies a date when the license converts to a permissive open-source license (typically 2–4 years from publication)
+
+This is the same licensing model used by Uniswap, Aave, and other leading DeFi protocols.
+
+---
+
+## Questions?
+
+For licensing inquiries, partnership discussions, or commercial use requests, contact [legal@layercover.com](mailto:legal@layercover.com).

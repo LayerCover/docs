@@ -1,0 +1,152 @@
+---
+title: Quickstart
+description: Add LayerCover insurance to your dApp in under 5 minutes
+order: 2
+slug: developers/quickstart
+---
+
+import { Callout } from '@/components/Callout'
+
+Get LayerCover running in your React dApp in three steps.
+
+---
+
+## 1. Install
+
+```bash
+npm install @layercover/sdk viem @mui/material @emotion/react @emotion/styled
+```
+
+---
+
+## 2. Add the CoverButton
+
+```tsx
+import { CoverButton } from '@layercover/sdk/react';
+
+function ProtocolPage() {
+  // Get your viem WalletClient from wagmi
+  const { data: walletClient } = useWalletClient();
+
+  return (
+    <CoverButton
+      walletClient={walletClient}
+      poolId={1}
+    />
+  );
+}
+```
+
+That's it! The button renders a styled "Cover" button. When clicked, it opens a complete purchase modal with quote fetching, duration selection, and transaction execution.
+
+### Live Example
+
+```tsx
+// App.tsx - Full working example
+import { CoverButton } from '@layercover/sdk/react';
+import { useWalletClient } from 'wagmi';
+
+export default function App() {
+  const { data: walletClient } = useWalletClient();
+
+  return (
+    <div style={{ padding: '2rem', textAlign: 'center' }}>
+      <h2>My DeFi Protocol</h2>
+      <p>Your deposits are protected by LayerCover</p>
+      <CoverButton
+        walletClient={walletClient}
+        poolId={1}
+        buttonText="Get Protected"
+        onSuccess={() => alert('Coverage purchased!')}
+      />
+    </div>
+  );
+}
+```
+
+---
+
+## 3. What Happens When a User Clicks
+
+<div className="grid grid-cols-1 md:grid-cols-4 gap-4 my-8">
+  <div className="rounded-lg border border-border p-4 text-center">
+    <span className="text-2xl">1️⃣</span>
+    <p className="text-sm mt-2 m-0">User clicks **"Cover"**</p>
+  </div>
+  <div className="rounded-lg border border-border p-4 text-center">
+    <span className="text-2xl">2️⃣</span>
+    <p className="text-sm mt-2 m-0">Modal fetches live quotes</p>
+  </div>
+  <div className="rounded-lg border border-border p-4 text-center">
+    <span className="text-2xl">3️⃣</span>
+    <p className="text-sm mt-2 m-0">User selects amount & duration</p>
+  </div>
+  <div className="rounded-lg border border-border p-4 text-center">
+    <span className="text-2xl">4️⃣</span>
+    <p className="text-sm mt-2 m-0">Approve + purchase in one flow</p>
+  </div>
+</div>
+
+---
+
+## Full CoverButton Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `walletClient` | `WalletClient` | ✅ | viem WalletClient instance |
+| `poolId` | `number` | ✅ | Pool ID for the coverage pool |
+| `availableBalance` | `number` | | User's token balance (display only) |
+| `onSuccess` | `() => void` | | Callback after successful purchase |
+| `referralCode` | `string` | | Your referral code (earn premiums from referrals) |
+| `buttonText` | `string` | | Button label (default: "Cover") |
+| `theme` | `Theme` | | Custom theme overrides |
+
+### Example with All Options
+
+```tsx
+<CoverButton
+  walletClient={walletClient}
+  poolId={1}
+  availableBalance={userBalance}
+  referralCode="YOUR_REFERRAL_CODE"
+  onSuccess={() => {
+    toast.success('Coverage purchased!');
+    refetchPositions();
+  }}
+  buttonText="Get Protected"
+  theme={customTheme}
+/>
+```
+
+---
+
+## Referral Integration
+
+Earn **5% of premiums** by passing a referral code:
+
+```tsx
+<CoverButton
+  walletClient={walletClient}
+  poolId={1}
+  referralCode="YOUR_CODE" // Register at app.layercover.com
+/>
+```
+
+<Callout type="info">
+  **Partner Benefits:** Register your referral code at [app.layercover.com](https://app.layercover.com) to start earning from referrals.
+</Callout>
+
+---
+
+## Next Steps
+
+<div className="grid gap-4 sm:grid-cols-2 my-8">
+  <a href="/developers/theming" className="block p-4 rounded-lg border border-border hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <h4 className="text-base font-semibold text-foreground m-0">🎨 Custom Theming →</h4>
+    <p className="text-sm text-muted-foreground m-0 mt-1">Match the widget to your brand</p>
+  </a>
+  <a href="/developers/sdk-reference" className="block p-4 rounded-lg border border-border hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <h4 className="text-base font-semibold text-foreground m-0">📖 Full SDK Reference →</h4>
+    <p className="text-sm text-muted-foreground m-0 mt-1">BuyCoverModal, headless SDK, hooks</p>
+  </a>
+</div>

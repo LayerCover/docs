@@ -4,9 +4,23 @@ description: Quick reference for deployed LayerCover smart contract addresses
 order: 4
 sidebar: Addresses
 ---
+import { Callout } from '@/components/Callout'
+
+<Callout type="warning">
+  **Always verify contract addresses** against the official block explorer before interacting. Never trust addresses from unofficial sources.
+</Callout>
+
+The table below lists all deployed LayerCover smart contracts across supported networks. Click any address to view it on the block explorer.
+
+---
 
 import { ContractAddresses } from '@/components/ContractAddresses'
-
 <ContractAddresses />
 
+---
 
+## Verification
+
+- All contracts are **verified on-chain** with matching source code on the block explorer
+- Proxy contracts use transparent proxy patterns - implementation addresses are visible via the explorer
+- For the full interface reference, see [Smart Contracts →](/contracts)

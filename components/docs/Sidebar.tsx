@@ -168,18 +168,11 @@ interface SidebarProps {
 }
 
 const manualIconMap = new Map<string, LucideIcon>([
-  ['introduction', Compass],
   ['getting-started', Rocket],
-  ['concepts', Lightbulb],
-  ['core-mechanics', Cog],
-  ['advanced-features', Sparkles],
-  ['guides', MapIcon],
-  ['user-guides', School],
-  ['governance', Landmark],
-  ['security', ShieldCheck],
-  ['integration', PlugZap],
-  ['technical-reference', CircuitBoard],
-  ['api', Braces],
+  ['policyholders', Shield],
+  ['underwriters', Landmark],
+  ['developers', Terminal],
+  ['protocol', CircuitBoard],
   ['resources', Library],
   ['resources/audits', FileCheck2],
   ['resources/risks', AlertTriangle],
@@ -189,10 +182,8 @@ const manualIconMap = new Map<string, LucideIcon>([
   ['resources/licensing', ScrollText],
   ['resources/brand-kit', Palette],
   ['resources/glossary', BookText],
-  ['faq', HelpCircle],
-  ['appendices', NotebookPen],
-  ['reference', BookOpen],
-])
+  ['resources/faq', HelpCircle],
+]);
 
 const iconPool: LucideIcon[] = [
   ALargeSmall,
@@ -413,10 +404,13 @@ export function Sidebar({ items, variant = 'default', onNavigate }: SidebarProps
   console.log('Sidebar rendering', { variant, itemsCount: items?.length });
   const pathname = usePathname()
   const normalizedPath = pathname ? stripVersionPrefix(pathname) : '/'
-  const [selectedAudience, setSelectedAudience] = useState<'users' | 'developers' | 'curators'>('users')
+
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const searchInputRef = useRef<HTMLInputElement>(null)
+
+  // The structure is now defined by the file system folders (policyholders, underwriters, etc)
+  const filteredItems = items;
 
   const searchableItems = useMemo(() => flattenSidebarItems(items), [items])
   const filteredSearchResults = useMemo(() => {
@@ -432,72 +426,6 @@ export function Sidebar({ items, variant = 'default', onNavigate }: SidebarProps
       })
       .slice(0, 20)
   }, [searchQuery, searchableItems])
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem('layercover-docs-audience')
-    if (saved && (saved === 'users' || saved === 'developers' || saved === 'curators')) {
-      setSelectedAudience(saved)
-    }
-  }, [])
-
-  // Save to localStorage when changed
-  const handleAudienceChange = (audience: 'users' | 'developers' | 'curators') => {
-    setSelectedAudience(audience)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('layercover-docs-audience', audience)
-    }
-  }
-
-  // Filter items based on selected audience
-  const getFilteredItems = () => {
-    const audienceNavigation = {
-      users: [
-        '/introduction',
-        '/getting-started',
-        '/concepts',
-        '/user-guides',
-        '/guides',
-        '/sdk',
-        '/api-reference',
-        '/core-mechanics',
-        '/faq',
-        '/resources',
-        '/technical-reference',
-        '/contracts',
-      ],
-      developers: [
-        '/introduction',
-        '/getting-started',
-        '/technical-reference',
-        '/contracts',
-        '/integration',
-        '/core-mechanics',
-        '/api',
-        '/resources',
-        '/appendices',
-      ],
-      curators: [
-        '/introduction',
-        '/advanced-features',
-        '/governance',
-        '/core-mechanics',
-        '/user-guides',
-        '/security',
-        '/resources',
-      ],
-    }
-
-    const allowedPaths = audienceNavigation[selectedAudience]
-
-    return items.filter(item => {
-      if (!item.href) return true // Keep items without href (categories)
-      const normalizedHref = stripVersionPrefix(item.href)
-      return allowedPaths.some(path => normalizedHref.startsWith(path))
-    })
-  }
-
-  const filteredItems = getFilteredItems()
 
 
   useEffect(() => {

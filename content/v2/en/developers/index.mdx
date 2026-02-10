@@ -1,0 +1,90 @@
+---
+title: Developers
+description: Integrate LayerCover insurance into your dApp
+order: 4
+sidebar: Developers
+---
+
+import { Callout } from '@/components/Callout'
+
+<Callout type="info">
+  **TL;DR:** Add insurance to your dApp in 3 lines with `CoverButton`, or go headless with the full SDK for complete control.
+</Callout>
+
+The **@layercover/sdk** provides three integration modes - choose the level of control you need:
+
+---
+
+## Integration Modes
+
+
+
+<div className="grid gap-4 sm:grid-cols-3 my-8">
+  <a href="/developers/quickstart" className="group block p-6 rounded-xl border border-border bg-gradient-to-br from-background to-green-50/50 dark:to-green-900/20 hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <span className="text-3xl mb-3 block grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">⚡</span>
+    <h3 className="text-lg font-semibold text-foreground mb-2">Drop-In Widget</h3>
+    <p className="text-sm text-muted-foreground m-0">3 lines of code. A pre-built button that opens a full purchase modal.</p>
+    <span className="text-xs mt-2 inline-block px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">Fastest</span>
+  </a>
+  <a href="/developers/sdk-reference#buycovermodal" className="group block p-6 rounded-xl border border-border bg-gradient-to-br from-background to-blue-50/50 dark:to-blue-900/20 hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <span className="text-3xl mb-3 block grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">🎨</span>
+    <h3 className="text-lg font-semibold text-foreground mb-2">Modal Component</h3>
+    <p className="text-sm text-muted-foreground m-0">Control when the modal opens with your own trigger UI. Themeable.</p>
+    <span className="text-xs mt-2 inline-block px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">Customisable</span>
+  </a>
+  <a href="/developers/sdk-reference#headless" className="group block p-6 rounded-xl border border-border bg-gradient-to-br from-background to-purple-50/50 dark:to-purple-900/20 hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <span className="text-3xl mb-3 block grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">🔧</span>
+    <h3 className="text-lg font-semibold text-foreground mb-2">Headless SDK</h3>
+    <p className="text-sm text-muted-foreground m-0">Full TypeScript SDK - fetch quotes, execute purchases, build your own UI.</p>
+    <span className="text-xs mt-2 inline-block px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">Full Control</span>
+  </a>
+</div>
+
+---
+
+## Requirements
+
+<Callout type="warning">
+  **Prerequisites:**
+  - **Node.js** ≥ 18
+  - **React** ≥ 18 (for React components)
+  - **viem** + **wagmi** (for wallet connection)
+  - **@mui/material** + **@emotion/react** + **@emotion/styled** (for widget UI)
+</Callout>
+
+```bash
+npm install @layercover/sdk viem @mui/material @emotion/react @emotion/styled
+```
+
+---
+
+## Quick Example
+
+```tsx
+import { CoverButton } from '@layercover/sdk/react';
+
+// That's it - 3 lines to add insurance to your dApp
+<CoverButton
+  walletClient={walletClient}  // viem WalletClient
+  poolId={1}                    // Pool ID for your protocol
+/>
+```
+
+---
+
+## Next Steps
+
+<div className="grid gap-4 sm:grid-cols-3 my-8">
+  <a href="/developers/quickstart" className="block p-4 rounded-lg border border-border hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <h4 className="text-base font-semibold text-foreground m-0">⚡ Quickstart →</h4>
+    <p className="text-sm text-muted-foreground m-0 mt-1">Full walkthrough of your first integration</p>
+  </a>
+  <a href="/developers/theming" className="block p-4 rounded-lg border border-border hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <h4 className="text-base font-semibold text-foreground m-0">🎨 Theming →</h4>
+    <p className="text-sm text-muted-foreground m-0 mt-1">Match the widget to your brand</p>
+  </a>
+  <a href="/developers/sdk-reference" className="block p-4 rounded-lg border border-border hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <h4 className="text-base font-semibold text-foreground m-0">📖 SDK Reference →</h4>
+    <p className="text-sm text-muted-foreground m-0 mt-1">Full API documentation</p>
+  </a>
+</div>

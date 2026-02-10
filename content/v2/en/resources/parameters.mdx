@@ -4,20 +4,46 @@ description: Live configuration from the deployed LayerCover contracts
 order: 5
 sidebar: Parameters
 ---
+import { Callout } from '@/components/Callout'
 
-<!-- POOL_PARAMETERS -->
+<Callout type="info">
+  **TL;DR:** This page shows the current on-chain configuration for each insurance pool. Parameters are updated via governance proposals with mandatory timelock delays.
+</Callout>
 
-## How parameters change
+import { PoolParameters } from '@/components/PoolParameters'
+<PoolParameters />
 
-LayerCover uses governance-controlled smart contracts to ensure updates follow transparent procedures:
+---
 
-1. **Governance proposals** – token holders can vote to adjust premiums, add pools, or retune limits. Successful proposals pass through a timelock before execution.
-2. **Committee actions** – the risk committee can pause pools, redirect fees, or recommend parameter changes in emergencies; all actions are logged on-chain.
-3. **Guardian controls** – the guardian multisig can pause the protocol in critical scenarios but cannot rewrite configuration on its own.
+## How Parameters Change
 
-## Additional resources
+All pool parameter updates follow a transparent, on-chain governance process:
 
-- [Fixed rate pricing](/concepts/pricing/intent-based) – learn how quotes and premiums work.
-- [Risk management](/concepts/underwriting/risk-assessment) – understand how pools are categorised and supervised.
-- [Security parameters](/resources/access-controls) – deeper dive into protocol safety switches.
-- [Governance](/governance/governance) – explore the processes behind parameter management.
+| Actor | Capability | Safeguard |
+| :--- | :--- | :--- |
+| **Protocol Owner** | Configure pool parameters, premium shares, risk limits | Changes via `ProtocolConfigurator` with on-chain transparency |
+| **Committee** | Emergency pool pause, incident reporting | Cannot modify core configuration |
+| **UMA Oracle** | Resolve disputed claims via Optimistic Oracle | Decentralised, permissionless dispute process |
+
+---
+
+## Related Pages
+
+<div className="grid gap-4 sm:grid-cols-2 my-8">
+  <a href="/protocol/pricing" className="block p-4 rounded-lg border border-border hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <h4 className="text-base font-semibold text-foreground m-0">💰 Fixed-Rate Pricing →</h4>
+    <p className="text-sm text-muted-foreground m-0 mt-1">How quotes and premiums work</p>
+  </a>
+  <a href="/underwriters/risk-assessment" className="block p-4 rounded-lg border border-border hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <h4 className="text-base font-semibold text-foreground m-0">🔍 Risk Assessment →</h4>
+    <p className="text-sm text-muted-foreground m-0 mt-1">How pools are categorised and supervised</p>
+  </a>
+  <a href="/resources/access-controls" className="block p-4 rounded-lg border border-border hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <h4 className="text-base font-semibold text-foreground m-0">🔑 Access Controls →</h4>
+    <p className="text-sm text-muted-foreground m-0 mt-1">Protocol safety switches and permissions</p>
+  </a>
+  <a href="/governance/governance" className="block p-4 rounded-lg border border-border hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <h4 className="text-base font-semibold text-foreground m-0">🏛️ Governance →</h4>
+    <p className="text-sm text-muted-foreground m-0 mt-1">Proposal and voting processes</p>
+  </a>
+</div>

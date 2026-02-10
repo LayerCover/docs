@@ -4,7 +4,7 @@ A production-ready documentation site built with Next.js 14 App Router, featurin
 
 ## Features
 
-- **Modern Stack**: Next.js 14 App Router, TypeScript, Tailwind CSS
+- **Modern Stack**: Next.js 15 App Router, TypeScript, Tailwind CSS
 - **MDX Support**: Full MDX with custom components (Tabs, Callouts, Code blocks)
 - **Versioning**: Multi-version documentation support (v1, v2, etc.)
 - **Search**: Algolia DocSearch + local FlexSearch fallback
@@ -93,7 +93,7 @@ docs-site/
 ### Installation
 
 ```bash
-npm install
+yarn install
 ```
 
 ### Development
@@ -240,19 +240,19 @@ export const versions: Version[] = [
 ]
 ```
 
-2. Create content directory:
+1. Create content directory:
 
 ```bash
 mkdir -p content/v3/en
 ```
 
-3. Copy content from previous version:
+1. Copy content from previous version:
 
 ```bash
 cp -r content/v2/en/* content/v3/en/
 ```
 
-4. Update the docs as needed
+1. Update the docs as needed
 
 ## Search Configuration
 
@@ -267,7 +267,7 @@ NEXT_PUBLIC_ALGOLIA_API_KEY=your_search_key
 NEXT_PUBLIC_ALGOLIA_INDEX=your_index_name
 ```
 
-3. Configure crawler in Algolia dashboard
+1. Configure crawler in Algolia dashboard
 
 ### Local Search (Fallback)
 
@@ -346,9 +346,9 @@ colors: {
 }
 ```
 
-2. Update logo in `public/logo.svg`
+1. Update logo in `public/logo.svg`
 
-3. Update `app/layout.tsx` metadata:
+2. Update `app/layout.tsx` metadata:
 
 ```typescript
 export const metadata = {
@@ -408,13 +408,12 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 ## License
 
-MIT License - see [LICENSE](./LICENSE)
+BUSL-1.1 — see [LICENSE](../../LICENSE)
 
 ## Support
 
-- GitHub Issues: [Your repo issues URL]
-- Discord: [Your discord invite]
-- Email: support@example.com
+- GitHub Issues: [github.com/LayerCover/monorepo/issues](https://github.com/LayerCover/monorepo/issues)
+- Docs: [docs.layercover.com](https://docs.layercover.com)
 
 ---
 

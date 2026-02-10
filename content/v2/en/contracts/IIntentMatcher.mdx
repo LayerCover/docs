@@ -7,7 +7,7 @@ description: Interface for intent-based coverage pricing and matching.
   View deployed contract addresses in the [Contract Addresses](/resources/contract-addresses) section.
 </Callout>
 
-The **IIntentMatcher** facilitates the "Intent-Based" pricing model. It acts as an order book where buyers can post coverage requests ("Buy Orders") and underwriters can sign off-chain offers ("Intents"). The matcher executes these trades, settling them on-chain.
+The **IIntentMatcher** facilitates the "Intent-Based" pricing model. It acts as an order book where buyers post coverage requests and underwriters sign off-chain offers ("Intents"). The matcher validates and executes these trades, settling them on-chain via the PolicyManager.
 
 ## Interface
 
@@ -33,6 +33,7 @@ interface IIntentMatcher {
         uint256 nonce;              // Nonce for replay protection
         uint256 expiry;             // Intent expiration timestamp
         uint256 salt;               // Unique salt to avoid hash collisions
+        bool requiresUpfront;       // If true, full premium must be paid upfront
     }
 
     struct CoverageBuyOrder {
@@ -48,29 +49,19 @@ interface IIntentMatcher {
     }
 
     struct ReserveIntent {
-        address solver;
-        address underwriter;
-        uint256 poolId;
-        uint32 minCoverageDuration;   // Minimum duration (seconds) the syndicate is willing to underwrite
+        address solver;               // Solver/matcher address
+        address underwriter;          // Syndicate underwriting the coverage
+        uint256 poolId;               // Target pool ID
+        uint32 minCoverageDuration;   // Minimum duration (seconds)
         uint32 maxCoverageDuration;   // Maximum duration (seconds)
-        uint256 coverageAmount;       // Total coverage reserved for this intent
-        uint256 minFillAmount;        // Minimum fill amount allowed when partial fills are enabled
-        bool allowPartialFill;        // Whether the syndicate permits partial fills
-        uint64 reservationExpiry;     // Timestamp when the reservation expires
-        uint96 nonce;                 // Unique per-reserve-intent nonce
+        uint256 coverageAmount;       // Total coverage reserved
+        uint256 minFillAmount;        // Minimum fill amount for partial fills
+        bool allowPartialFill;        // Whether partial fills are permitted
+        uint64 reservationExpiry;     // Reservation expiration timestamp
+        uint96 nonce;                 // Unique nonce for this reservation
         address whitelistedBuyer;     // Optional buyer allowlist (address(0) for open)
-    }
-
-    struct OnChainBuyOrder {
-        address buyer;
-        uint256 poolId;
-        uint256 coverageAmount;
-        uint256 maxPremiumRateBps;
-        uint256 duration;
-        uint256 premiumDeposit;
-        uint256 timestamp;
-        bool filled;
-        bool cancelled;
+        uint16 minPremiumBps;         // Minimum premium rate (seller's floor)
+        uint16 cancellationPenaltyBps; // Cancellation penalty in basis points
     }
 
     // ==================== Events ====================
@@ -85,29 +76,23 @@ interface IIntentMatcher {
         uint256 policyId
     );
 
-    event BuyOrderPosted(
-        uint256 indexed orderId,
-        address indexed buyer,
-        uint256 indexed poolId,
-        uint256 coverageAmount,
-        uint256 maxPremiumRateBps
-    );
-
-    event BuyOrderFilled(
-        uint256 indexed orderId,
-        address indexed filler,
-        uint256 policyId
-    );
-
-    event BuyOrderCancelled(uint256 indexed orderId);
-
     event NonceIncremented(address indexed user, uint256 newNonce);
 
     // ==================== Functions ====================
 
     /**
      * @notice Execute one or more matched intents to create coverage policies
-     * @dev For single intent execution, pass arrays of length 1
+     * @dev Unified function for both single and batch execution
+     * @param intents Array of coverage intents (length 1 for single)
+     * @param intentSignatures Corresponding signatures
+     * @param order The buyer's coverage order
+     * @param orderSignature Buyer's signature
+     * @param fillAmounts Amount to fill from each intent
+     * @param reserveIntents Reserve intents from syndicates
+     * @param reserveSignatures Syndicate signatures
+     * @param vault For vault cover: the ERC4626 vault address (address(0) for non-vault)
+     * @param sharesToCover For vault cover: number of shares to protect
+     * @return policyIds Array of created policy IDs
      */
     function executeMatchedIntent(
         CoverageIntent[] calldata intents,
@@ -122,77 +107,66 @@ interface IIntentMatcher {
     ) external returns (uint256[] memory policyIds);
 
     /**
-     * @notice Posts a buy order to the on-chain order book
-     */
-    function postBuyOrder(CoverageBuyOrder calldata order) external returns (uint256 orderId);
-
-    /**
-     * @notice Fills an on-chain buy order
-     */
-    function fillBuyOrder(
-        uint256 orderId,
-        uint256 offerRateBps,
-        uint256 fillAmount,
-        ReserveIntent calldata reserveIntent,
-        bytes calldata reserveSignature
-    ) external returns (uint256 policyId);
-
-    /**
-     * @notice Cancels an unfilled buy order
-     */
-    function cancelBuyOrder(uint256 orderId) external;
-
-    /**
-     * @notice Gets the best intent rate available for a pool/coverage amount
-     */
-    function getBestIntentRate(uint256 poolId, uint256 coverageAmount) external view returns (uint256 bestRate);
-
-    /**
-     * @notice Gets the best intent rate available for a specific buyer (filters to their orders only).
-     */
-    function getBestIntentRateForBuyer(uint256 poolId, uint256 coverageAmount, address buyer)
-        external
-        view
-        returns (uint256 bestRate);
-
-    /**
-     * @notice Configures the IntentOrderBook contract address
-     */
-    function setIntentOrderBook(address orderBook) external;
-
-    /**
-     * @notice Gets all unfilled buy orders for a pool
-     */
-    function getUnfilledBuyOrders(uint256 poolId) external view returns (uint256[] memory orderIds);
-
-    /**
-     * @notice Gets user's buy orders
-     */
-    function getUserBuyOrders(address user) external view returns (uint256[] memory);
-
-    /**
-     * @notice Gets total order book size
-     */
-    function getBuyOrderCount() external view returns (uint256);
-
-    /**
      * @notice Generates EIP-712 hash for intent
+     * @param intent The coverage intent to hash
+     * @return hash The EIP-712 typed data hash
      */
     function getIntentHash(CoverageIntent calldata intent) external view returns (bytes32);
 
     /**
      * @notice Generates EIP-712 hash for buy order
+     * @param order The buy order to hash
+     * @return hash The EIP-712 typed data hash
      */
     function getOrderHash(CoverageBuyOrder calldata order) external view returns (bytes32);
 
     /**
-     * @notice Increments user's nonce
+     * @notice Increments user's nonce to invalidate all prior intents
      */
     function incrementNonce() external;
 
     /**
      * @notice Gets user's current nonce
+     * @param user Address to query
+     * @return Current nonce value
      */
     function nonces(address user) external view returns (uint256);
 }
 ```
+
+## Intent Flow
+
+```mermaid
+sequenceDiagram
+    participant Buyer
+    participant Solver as Solver API
+    participant IM as IntentMatcher
+    participant Syn as Syndicate
+    participant PM as PolicyManager
+
+    Buyer->>Solver: Request quote
+    Solver->>Solver: Find best intent
+    Solver->>Syn: reserveMatchedIntent()
+    Syn-->>Solver: reservationKey
+    Buyer->>IM: executeMatchedIntent()
+    IM->>IM: Validate signatures
+    IM->>Syn: consumeReservation()
+    IM->>PM: purchaseCoverage()
+    PM-->>Buyer: Policy NFT
+```
+
+## Key Changes from Previous Version
+
+1. **Unified Execute Function**: The separate `executeMatchedIntent` and `executeMatchedIntentBatch` have been merged into a single function that handles both cases.
+
+2. **Vault Cover Support**: The `vault` and `sharesToCover` parameters enable vault cover purchases through the same flow.
+
+3. **Enhanced ReserveIntent**: Added `minPremiumBps` (seller's floor) and `cancellationPenaltyBps` for more sophisticated underwriting control.
+
+4. **Removed On-Chain Orderbook**: The `postBuyOrder`, `fillBuyOrder`, `cancelBuyOrder`, and related orderbook functions have been removed in favor of the off-chain intent matching model.
+
+## Related Documentation
+
+- [Intent-Based Pricing](/protocol/pricing) - How the intent system works
+- [ISyndicate](/contracts/ISyndicate) - Reservation management
+- [IPolicyManager](/contracts/IPolicyManager) - Policy creation

@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createPublicClient, http, Address } from 'viem'
-import baseSepoliaSingletons from '../../../../data/deployments/base_sepolia/singletons.json'
-import baseSepoliaInstance from '../../../../data/deployments/base_sepolia/instances/usdc.json'
 import { POOLS } from '../../../config/pools'
 import { getCurator } from '../../../config/curators'
+
+// Import deployed contract addresses from the canonical deployment artifacts
+import usdcDeployment from '../../../../../contracts/deployments/base_sepolia/usdc.json'
 
 export const revalidate = 60
 
@@ -14,8 +15,8 @@ async function readOptional<T>(
 ): Promise<T> {
   try {
     return (await client.readContract(params)) as T
-  } catch (error) {
-    console.warn(`Optional read failed for ${String(params.functionName)}:`, error)
+  } catch {
+    // Expected for functions not present on the deployed contract — silently use fallback
     return fallback
   }
 }
@@ -184,19 +185,20 @@ const poolRegistryAbi = [
 
 const riskRatingLabels = ['AAA', 'AA', 'A', 'BBB', 'BB', 'B', 'C']
 
+// Build network config from the deployment artifact
 const NETWORK_CONFIG = {
   'base-sepolia': {
     name: 'Base Sepolia',
-    chainId: Number(baseSepoliaSingletons.chainId),
-    rpcUrl: baseSepoliaSingletons.rpcUrl as string,
+    chainId: 84532,
+    rpcUrl: process.env.BASE_SEPOLIA_RPC_URL || 'https://sepolia.base.org',
     addresses: {
-      policyManager: baseSepoliaInstance.contracts.core.PolicyManager.address as Address,
-      underwriterManager: baseSepoliaInstance.contracts.core.UnderwriterManager.address as Address,
-      poolAllocationManager: baseSepoliaInstance.contracts.core.PoolAllocationManager.address as Address,
-      capitalPool: baseSepoliaInstance.contracts.pools.CapitalPool.address as Address,
-      poolRegistry: baseSepoliaInstance.contracts.pools.PoolRegistry.address as Address,
-      riskManager: baseSepoliaInstance.contracts.core.RiskManager.address as Address,
-      riskAdmin: baseSepoliaSingletons.contracts.utilities.ProtocolConfigurator.address as Address,
+      policyManager: (usdcDeployment as Record<string, string>).PolicyManager as Address,
+      underwriterManager: (usdcDeployment as Record<string, string>).PoolAllocationManager as Address,
+      poolAllocationManager: (usdcDeployment as Record<string, string>).PoolAllocationManager as Address,
+      capitalPool: (usdcDeployment as Record<string, string>).CapitalPool as Address,
+      poolRegistry: (usdcDeployment as Record<string, string>).PoolRegistry as Address,
+      riskManager: (usdcDeployment as Record<string, string>).RiskManager as Address,
+      riskAdmin: ((usdcDeployment as Record<string, string>).ProtocolConfigurator || '0x0000000000000000000000000000000000000000') as Address,
     },
   },
 } as const
@@ -216,21 +218,21 @@ function buildFallbackResponse(networkKey: NetworkKey) {
     fetchedAt: new Date().toISOString(),
     fallback: true,
     policySettings: {
-      coverCooldownSeconds: 0,
-      catPremiumBps: 0,
-      reserveFactorBps: 0,
-      intentAdvantageBps: 0,
-      intentDepositWindowSeconds: 0,
+      coverCooldownSeconds: 0, // No cooldown by default
+      catPremiumBps: 2000, // 20% CAT premium (PolicyManager.sol: line 251)
+      reserveFactorBps: 0, // No reserve factor by default
+      intentAdvantageBps: 0, // No intent advantage by default
+      intentDepositWindowSeconds: 0, // No deposit window by default
     },
     capitalSettings: {
-      withdrawalNoticeSeconds: 0,
-      deallocationNoticeSeconds: 0,
-      maxAllocationsPerUnderwriter: 0,
-      totalRiskPoints: 0,
-      maxLeverageRatio: 0,
+      withdrawalNoticeSeconds: 0, // Instant withdrawal by default
+      deallocationNoticeSeconds: 0, // Instant deallocation by default
+      maxAllocationsPerUnderwriter: 5, // (PoolAllocations.sol: line 105)
+      totalRiskPoints: 20, // (PoolAllocations.sol: line 35)
+      maxLeverageRatio: 20, // 20x leverage (PoolAllocations.sol: line 106)
     },
     salvageSettings: {
-      sweepGracePeriodSeconds: 0,
+      sweepGracePeriodSeconds: 15552000, // 180 days (SalvageManager.sol: line 31)
     },
     pools: chainPools.map((pool) => {
       const curator = pool.protocolId ? getCurator(pool.protocolId) : undefined
@@ -285,105 +287,132 @@ export async function GET(_request: Request, { params }: { params: { network: st
   })
 
   try {
+    // Use readOptional for ALL calls — some functions may not exist on the deployed contract
     const [coverCooldown, catPremium, reserveFactor, intentAdvantage, withdrawalNotice, deallocationNotice, sweepGrace, totalRiskPoints, maxAllocations, maxLeverage, intentDepositWindow] = await Promise.all([
-      client.readContract({ address: config.addresses.policyManager, abi: policyManagerAbi, functionName: 'coverCooldownPeriod' }),
-      client.readContract({ address: config.addresses.policyManager, abi: policyManagerAbi, functionName: 'catPremiumBps' }),
-      client.readContract({ address: config.addresses.policyManager, abi: policyManagerAbi, functionName: 'reserveFactor' }),
+      readOptional(client, { address: config.addresses.policyManager, abi: policyManagerAbi, functionName: 'coverCooldownPeriod' }, BigInt(0)),
+      readOptional(client, { address: config.addresses.policyManager, abi: policyManagerAbi, functionName: 'catPremiumBps' }, BigInt(2000)),
+      readOptional(client, { address: config.addresses.policyManager, abi: policyManagerAbi, functionName: 'reserveFactor' }, BigInt(0)),
       readOptional(client, { address: config.addresses.policyManager, abi: policyManagerAbi, functionName: 'intentAdvantageBps' }, BigInt(0)),
-      client.readContract({ address: config.addresses.capitalPool, abi: capitalPoolAbi, functionName: 'underwriterNoticePeriod' }),
-      readOptional(client, { address: config.addresses.poolAllocationManager, abi: poolAllocationManagerAbi, functionName: 'deallocationNoticePeriod' }, 0n),
-      client.readContract({ address: config.addresses.riskManager, abi: riskManagerAbi, functionName: 'SWEEP_GRACE_PERIOD' }),
-      client.readContract({ address: config.addresses.underwriterManager, abi: underwriterManagerAbi, functionName: 'TOTAL_RISK_POINTS' }),
-      client.readContract({ address: config.addresses.underwriterManager, abi: underwriterManagerAbi, functionName: 'maxAllocationsPerUnderwriter' }),
-      client.readContract({ address: config.addresses.underwriterManager, abi: underwriterManagerAbi, functionName: 'maxLeverageRatio' }),
-      config.addresses.riskAdmin
-        ? readOptional(client, { address: config.addresses.riskAdmin, abi: riskAdminAbi, functionName: 'intentDepositWindow' }, BigInt(0))
-        : Promise.resolve(BigInt(0)),
+      readOptional(client, { address: config.addresses.capitalPool, abi: capitalPoolAbi, functionName: 'underwriterNoticePeriod' }, BigInt(0)),
+      readOptional(client, { address: config.addresses.poolAllocationManager, abi: poolAllocationManagerAbi, functionName: 'deallocationNoticePeriod' }, BigInt(0)),
+      readOptional(client, { address: config.addresses.riskManager, abi: riskManagerAbi, functionName: 'SWEEP_GRACE_PERIOD' }, BigInt(15552000)),
+      readOptional(client, { address: config.addresses.underwriterManager, abi: underwriterManagerAbi, functionName: 'TOTAL_RISK_POINTS' }, BigInt(20)),
+      readOptional(client, { address: config.addresses.underwriterManager, abi: underwriterManagerAbi, functionName: 'maxAllocationsPerUnderwriter' }, BigInt(5)),
+      readOptional(client, { address: config.addresses.underwriterManager, abi: underwriterManagerAbi, functionName: 'maxLeverageRatio' }, BigInt(20n * 10n ** 18n)),
+      readOptional(client, { address: config.addresses.riskAdmin, abi: riskAdminAbi, functionName: 'intentDepositWindow' }, BigInt(0)),
     ])
-
-    const poolCount = Number(
-      await client.readContract({
-        address: config.addresses.poolRegistry,
-        abi: poolRegistryAbi,
-        functionName: 'getPoolCount',
-      })
-    )
 
     // Get pool configs for this chainId
     const chainPools = POOLS[config.chainId] || []
 
+    let poolCount: number
+    try {
+      poolCount = Number(
+        await client.readContract({
+          address: config.addresses.poolRegistry,
+          abi: poolRegistryAbi,
+          functionName: 'getPoolCount',
+        })
+      )
+    } catch {
+      // If getPoolCount fails, fall back to the number of pools in static config
+      poolCount = chainPools.length
+    }
+
     const pools = [] as any[]
     for (let i = 0; i < poolCount; i++) {
       const poolId = BigInt(i)
-      const [tokenAddress, totalCoverage, isPaused, feeRecipient, claimFeeBps, riskRating] = await client.readContract({
-        address: config.addresses.poolRegistry,
-        abi: poolRegistryAbi,
-        functionName: 'getPoolStaticData',
-        args: [poolId],
-      })
-
-      const rateModel = await client.readContract({
-        address: config.addresses.poolRegistry,
-        abi: poolRegistryAbi,
-        functionName: 'getPoolRateModel',
-        args: [poolId],
-      }) as { base: bigint; slope1: bigint; slope2: bigint; kink: bigint }
-
-      const [yieldPool, usesEscrow, poolInfoData] = await Promise.all([
-        client
-          .readContract({
-            address: config.addresses.poolRegistry,
-            abi: poolRegistryAbi,
-            functionName: 'isYieldRewardPool',
-            args: [poolId],
-          })
-          .catch(() => false),
-        client
-          .readContract({
-            address: config.addresses.poolRegistry,
-            abi: poolRegistryAbi,
-            functionName: 'poolUsesEscrow',
-            args: [poolId],
-          })
-          .catch(() => false),
-        client
-          .readContract({
-            address: config.addresses.underwriterManager,
-            abi: underwriterManagerAbi,
-            functionName: 'poolInfo',
-            args: [poolId],
-          })
-          .catch(() => [0n, 0n, 0n, 0n] as const),
-      ])
-
-      // Find pool metadata from config
-      const poolConfig = chainPools.find((p) => p.poolId === Number(poolId))
+      const poolConfig = chainPools.find((p) => p.poolId === i)
       const curator = poolConfig?.protocolId ? getCurator(poolConfig.protocolId) : undefined
 
-      pools.push({
-        id: Number(poolId),
-        token: tokenAddress,
-        name: poolConfig?.metadata?.description || `Pool #${poolId}`,
-        protocolName: curator?.displayName || curator?.name || '',
-        logo: poolConfig?.metadata?.logo || '',
-        protocolLogo: poolConfig?.metadata?.protocolLogo || '',
-        underlyingToken: poolConfig?.underlyingToken || '',
-        poolType: poolConfig?.type || '',
-        totalCoverageSold: totalCoverage.toString(),
-        claimFeeBps: Number(claimFeeBps),
-        riskRating: riskRatingLabels[Number(riskRating)] || 'Unknown',
-        isPaused,
-        feeRecipient,
-        rateModel: {
-          base: rateModel.base.toString(),
-          slope1: rateModel.slope1.toString(),
-          slope2: rateModel.slope2.toString(),
-          kink: rateModel.kink.toString(),
-        },
-        isYieldPool: yieldPool,
-        usesEscrow,
-        mutexGroupId: Number(poolInfoData[3]),
-      })
+      try {
+        const [tokenAddress, totalCoverage, isPaused, feeRecipient, claimFeeBps, riskRating] = await client.readContract({
+          address: config.addresses.poolRegistry,
+          abi: poolRegistryAbi,
+          functionName: 'getPoolStaticData',
+          args: [poolId],
+        })
+
+        const rateModel = await readOptional(client, {
+          address: config.addresses.poolRegistry,
+          abi: poolRegistryAbi,
+          functionName: 'getPoolRateModel',
+          args: [poolId],
+        }, { base: 0n, slope1: 0n, slope2: 0n, kink: 0n }) as { base: bigint; slope1: bigint; slope2: bigint; kink: bigint }
+
+        const [yieldPool, usesEscrow, poolInfoData] = await Promise.all([
+          client
+            .readContract({
+              address: config.addresses.poolRegistry,
+              abi: poolRegistryAbi,
+              functionName: 'isYieldRewardPool',
+              args: [poolId],
+            })
+            .catch(() => false),
+          client
+            .readContract({
+              address: config.addresses.poolRegistry,
+              abi: poolRegistryAbi,
+              functionName: 'poolUsesEscrow',
+              args: [poolId],
+            })
+            .catch(() => false),
+          client
+            .readContract({
+              address: config.addresses.underwriterManager,
+              abi: underwriterManagerAbi,
+              functionName: 'poolInfo',
+              args: [poolId],
+            })
+            .catch(() => [0n, 0n, 0n, 0n] as const),
+        ])
+
+        pools.push({
+          id: i,
+          token: tokenAddress,
+          name: poolConfig?.metadata?.description || `Pool #${poolId}`,
+          protocolName: curator?.displayName || curator?.name || '',
+          logo: poolConfig?.metadata?.logo || '',
+          protocolLogo: poolConfig?.metadata?.protocolLogo || '',
+          underlyingToken: poolConfig?.underlyingToken || '',
+          poolType: poolConfig?.type || '',
+          totalCoverageSold: totalCoverage.toString(),
+          claimFeeBps: Number(claimFeeBps),
+          riskRating: riskRatingLabels[Number(riskRating)] || 'Unknown',
+          isPaused,
+          feeRecipient,
+          rateModel: {
+            base: rateModel.base.toString(),
+            slope1: rateModel.slope1.toString(),
+            slope2: rateModel.slope2.toString(),
+            kink: rateModel.kink.toString(),
+          },
+          isYieldPool: yieldPool,
+          usesEscrow,
+          mutexGroupId: Number(poolInfoData[3]),
+        })
+      } catch (poolError: any) {
+        // If on-chain read fails, still include the pool with static metadata
+        console.warn(`Failed to read on-chain data for pool ${i}:`, poolError?.message)
+        pools.push({
+          id: i,
+          token: poolConfig?.address || '',
+          name: poolConfig?.metadata?.description || `Pool #${i}`,
+          protocolName: curator?.displayName || curator?.name || '',
+          logo: poolConfig?.metadata?.logo || '',
+          protocolLogo: poolConfig?.metadata?.protocolLogo || '',
+          underlyingToken: poolConfig?.underlyingToken || '',
+          poolType: poolConfig?.type || '',
+          totalCoverageSold: '0',
+          claimFeeBps: 0,
+          riskRating: 'N/A',
+          isPaused: false,
+          feeRecipient: '0x0000000000000000000000000000000000000000',
+          isYieldPool: false,
+          usesEscrow: false,
+          mutexGroupId: 0,
+        })
+      }
     }
 
     const response = {

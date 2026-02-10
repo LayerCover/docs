@@ -1,0 +1,205 @@
+---
+title: Terms of Service
+description: Terms and conditions governing your use of the LayerCover protocol and associated services
+order: 11
+sidebar: Terms of Service
+---
+import { Callout } from '@/components/Callout'
+
+<Callout type="info">
+  **Effective Date: February 8, 2026.** Please read these terms carefully before using LayerCover.
+</Callout>
+
+## 1. Agreement to Terms
+
+By accessing or using the LayerCover protocol, website ([layercover.com](https://layercover.com)), documentation, SDK, or any associated smart contracts (collectively, the **"Services"**), you agree to be bound by these Terms of Service (**"Terms"**). If you do not agree to these Terms, do not use the Services.
+
+"**We**," "**us**," or "**LayerCover**" refers to LayerCover Labs Ltd and its affiliates. "**You**" or "**User**" refers to any individual or entity accessing the Services.
+
+---
+
+## 2. Eligibility
+
+You represent and warrant that:
+
+1. You are at least **18 years of age** (or the age of majority in your jurisdiction)
+2. You have the **legal capacity** to enter into these Terms
+3. You are **not located in**, incorporated in, or a citizen or resident of any **Restricted Territory** (see Section 10)
+4. You are not subject to any **sanctions** administered by OFAC, the UN Security Council, the EU, or any other applicable governmental authority
+5. Your use of the Services will not violate any applicable **law or regulation**
+
+---
+
+## 3. Description of Services
+
+LayerCover is a **decentralised on-chain cover protocol** that facilitates:
+
+- **Policyholders** purchasing cover for DeFi positions (stablecoin de-peg, vault share loss, parametric events)
+- **Underwriters** providing capital through Syndicates to back risk pools and earn premiums and yield
+- **Developers** integrating cover functionality into third-party applications via the LayerCover SDK
+
+The Services provide a **user interface** and **developer tools** for interacting with smart contracts deployed on supported blockchain networks. LayerCover does not take custody of your funds, execute transactions on your behalf, or act as a counterparty to any cover arrangement.
+
+---
+
+## 4. Smart Contract Interactions
+
+### 4.1 Self-Custody
+
+All interactions with LayerCover smart contracts are **non-custodial**. You retain sole control of your wallet, private keys, and digital assets at all times. LayerCover cannot reverse, cancel, or modify any blockchain transaction once submitted.
+
+### 4.2 Transaction Finality
+
+Blockchain transactions are **irreversible** once confirmed. You are solely responsible for verifying transaction details (amounts, addresses, gas fees) before signing.
+
+### 4.3 Smart Contract Risk
+
+Smart contracts are experimental software. While LayerCover aims to conduct thorough [security audits](/resources/audits) and testing, **no smart contract can be guaranteed to be free of vulnerabilities**. You acknowledge and accept the inherent risks of interacting with smart contracts, including but not limited to:
+
+- Undiscovered bugs or exploits
+- Blockchain consensus failures or reorganisations
+- Oracle malfunctions or manipulation
+- Third-party protocol failures affecting integrated yield strategies
+
+---
+
+## 5. Cover Policies - Not Insurance
+
+<Callout type="warning">
+  **LayerCover cover policies are not insurance contracts.** They are on-chain financial instruments governed entirely by smart contract logic. LayerCover is not an insurance company, broker, or intermediary and does not provide insurance in any jurisdiction.
+</Callout>
+
+### 5.1 No Guarantee of Payout
+
+Cover payouts are contingent on:
+
+- Sufficient capital in the [Capital Pool](/protocol/capital-pool), [Backstop Pool](/protocol/backstop-pool), and any applicable reinsurance arrangements
+- Satisfaction of all claim conditions as defined by the relevant smart contracts
+- Proper claim submission within required timeframes
+
+### 5.2 Partial Payouts
+
+If the payout waterfall (pool capital → reinsurance → backstop → treasury) is exhausted before a claim is fully satisfied, the claim will be **partially paid**. LayerCover does not guarantee full coverage under all circumstances.
+
+### 5.3 Cooldown Period
+
+New policies are subject to a **7-day cooldown period** during which claims cannot be filed, as described in the [policy documentation](/policyholders/buying-cover).
+
+---
+
+## 6. Underwriter Risks
+
+If you participate as an underwriter (providing capital via Syndicates), you acknowledge:
+
+1. **Loss of Capital** - Your deposited capital may be used to pay claims. Losses are distributed pro-rata based on your share of the relevant pool
+2. **Illiquidity** - Capital actively backing policies is locked until those policies expire or settle
+3. **No Guaranteed Returns** - Past yields from premiums or DeFi strategies are not indicative of future performance
+4. **Salvage Rights** - When claims are paid, underwriters receive distressed assets (salvage rights), which may have reduced or zero value
+
+---
+
+## 7. Fees
+
+LayerCover may charge fees for certain Services, including but not limited to:
+
+- **Claim fees** assessed on filed claims
+- **Protocol fees** on premium flows
+- **Referral commissions** as described in the [Referral System](/governance/referral-system)
+
+Fee structures are encoded in smart contracts and may be adjusted through governance processes. Current fee parameters are documented on the [Parameters](/resources/parameters) page.
+
+---
+
+## 8. Prohibited Uses
+
+You agree **not** to use the Services to:
+
+1. Violate any applicable law, regulation, or sanctions programme
+2. Engage in market manipulation, wash trading, or fraudulent claim activity
+3. Exploit smart contract vulnerabilities for personal gain (rather than responsibly disclosing them)
+4. Circumvent access controls, rate limits, or security mechanisms
+5. Use automated systems (bots, scripts) in a manner that degrades the Services for other users
+6. Infringe upon any intellectual property or proprietary rights
+
+---
+
+## 9. Intellectual Property
+
+All LayerCover intellectual property - including smart contract source code, SDK, frontend applications, brand assets, and documentation - remains the property of LayerCover Labs Ltd. Usage is governed by the applicable [licence terms](/resources/licensing).
+
+Documentation content is licensed under **CC BY 4.0** and may be referenced with attribution. Smart contract source code is released under **BUSL-1.1** and may not be deployed commercially without permission.
+
+---
+
+## 10. Restricted Territories
+
+The Services are **not available** to persons or entities located in, incorporated in, or citizens or residents of:
+
+- Countries subject to comprehensive US, EU, or UN sanctions (including but not limited to Cuba, Iran, North Korea, Syria, and the Crimea, Donetsk, and Luhansk regions of Ukraine)
+- Any jurisdiction where the use of decentralised protocols or digital assets is prohibited by law
+
+We reserve the right to restrict access from additional jurisdictions at any time.
+
+---
+
+## 11. Disclaimers
+
+### 11.1 "As-Is" Basis
+
+The Services are provided on an **"AS-IS"** and **"AS-AVAILABLE"** basis without warranties of any kind, whether express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, and non-infringement.
+
+### 11.2 No Financial Advice
+
+Nothing in the Services or documentation constitutes **financial, investment, legal, or tax advice**. You should consult your own professional advisors before making any financial decisions.
+
+### 11.3 Third-Party Protocols
+
+LayerCover integrates with third-party protocols (e.g., Aave, Compound, UMA) for yield generation and dispute resolution. We do not control, endorse, or guarantee the performance of any third-party protocol.
+
+---
+
+## 12. Limitation of Liability
+
+To the maximum extent permitted by applicable law, LayerCover Labs Ltd, its directors, employees, contractors, and affiliates shall **not be liable** for:
+
+- Any indirect, incidental, special, consequential, or punitive damages
+- Loss of profits, data, use, goodwill, or digital assets
+- Any damages arising from your interaction with smart contracts, blockchain networks, or third-party protocols
+- Any unauthorised access to or alteration of your transmissions or data
+
+Our total aggregate liability for any claims arising from or related to the Services shall not exceed the amount of fees actually paid by you to LayerCover in the **twelve (12) months** preceding the claim.
+
+---
+
+## 13. Indemnification
+
+You agree to indemnify, defend, and hold harmless LayerCover Labs Ltd and its affiliates from any claims, losses, damages, liabilities, and expenses (including legal fees) arising from:
+
+- Your use of the Services
+- Your violation of these Terms
+- Your violation of any applicable law or regulation
+- Any claim by a third party arising from your activities
+
+---
+
+## 14. Modifications
+
+We reserve the right to modify these Terms at any time. Material changes will be communicated through the documentation site and/or protocol interface. Your continued use of the Services after such changes constitutes acceptance of the updated Terms.
+
+---
+
+## 15. Governing Law & Dispute Resolution
+
+These Terms shall be governed by and construed in accordance with the laws of **England and Wales**, without regard to conflict of law principles. Any disputes shall be resolved through **binding arbitration** in London, United Kingdom, under the rules of the London Court of International Arbitration (LCIA).
+
+---
+
+## 16. Severability
+
+If any provision of these Terms is found to be unlawful, void, or unenforceable, that provision shall be severed and shall not affect the validity and enforceability of the remaining provisions.
+
+---
+
+## 17. Contact
+
+For questions about these Terms, contact [legal@layercover.com](mailto:legal@layercover.com).

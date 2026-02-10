@@ -1,0 +1,97 @@
+---
+title: Underwriters
+description: Earn premiums and DeFi yield by backing on-chain insurance
+order: 3
+sidebar: Underwriters
+---
+import { Callout } from '@/components/Callout'
+
+<Callout type="info">
+  **TL;DR:** Deposit capital → Earn premiums from policies sold + DeFi yield on idle funds. Two paths: direct pool allocation or passive Syndicate participation.
+</Callout>
+
+LayerCover enables capital providers to earn returns by backing insurance policies. Your capital is deployed single-sided (USDC or wstETH) and earns from two sources simultaneously.
+
+---
+
+## Dual Yield Sources
+
+```mermaid
+flowchart LR
+    D["💰 Your Deposit"] --> CP["CapitalPool"]
+    CP --> P["📋 Premium Income"]
+    CP --> Y["📈 DeFi Yield"]
+    P --> R["🎯 Your Returns"]
+    Y --> R
+    
+    style P fill:#22c55e20,stroke:#22c55e
+    style Y fill:#3b82f620,stroke:#3b82f6
+```
+
+| Source | How | Typical Range |
+| :--- | :--- | :--- |
+| **Premium Income** | Your share of policy premiums from pools you back | Variable per pool |
+| **DeFi Yield** | Idle capital deployed to Aave, Compound via whitelisted adapters | Market rate |
+
+---
+
+## Two Participation Modes
+
+
+
+<div className="grid gap-4 sm:grid-cols-2 my-8">
+  <div className="group p-6 rounded-xl border border-border bg-gradient-to-br from-background to-green-50/50 dark:to-green-900/20 hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 transition-all duration-300">
+    <span className="text-3xl mb-3 block grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">🏛️</span>
+    <h3 className="text-lg font-semibold text-foreground mb-2">Syndicates (Passive)</h3>
+    <p className="text-sm text-muted-foreground">Deposit into a managed vault. A professional Syndicate Manager handles pool selection, risk allocation, and fixed-rate market making on your behalf.</p>
+    <a href="/underwriters/syndicates" className="text-sm font-medium text-brand-600 dark:text-brand-400 no-underline mt-2 inline-block">Learn about Syndicates →</a>
+  </div>
+  <div className="group p-6 rounded-xl border border-border bg-gradient-to-br from-background to-blue-50/50 dark:to-blue-900/20 hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 transition-all duration-300">
+    <span className="text-3xl mb-3 block grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">🎯</span>
+    <h3 className="text-lg font-semibold text-foreground mb-2">Direct Allocation (Advanced)</h3>
+    <p className="text-sm text-muted-foreground">Manage your own capital allocation across specific pools. Full control over risk exposure, leverage, and pool selection.</p>
+    <a href="/underwriters/capital-and-leverage" className="text-sm font-medium text-brand-600 dark:text-brand-400 no-underline mt-2 inline-block">Learn about Allocation →</a>
+  </div>
+</div>
+
+---
+
+## Key Concepts at a Glance
+
+| Concept | What It Means |
+| :--- | :--- |
+| **Single-Sided Liquidity** | Deposit one asset (USDC). No LP pairs, no impermanent loss. |
+| **Risk Points Budget** | Each pool consumes risk points. Your total budget limits exposure. |
+| **Leverage** | Back more coverage than your deposit via uncorrelated pool diversification. |
+| **Capital Locking** | Capital backing active policies is locked until those policies expire or settle. Unlocked capital can be withdrawn instantly. |
+| **Salvage Rights** | If a claim is paid, you receive tokenized rights to the distressed assets. |
+
+---
+
+## How Claims Affect You
+
+When a policy pays out a claim:
+
+1. Your capital is reduced **pro-rata** based on your share of the pool at the claim block
+2. You receive **salvage rights** - tokenized claims on the distressed assets
+3. Salvage rights are **tradeable** - sell to distressed debt investors or hold for potential recovery
+4. You **cannot front-run claims** - the protocol snapshots liability at the moment of the incident
+
+---
+
+## Next Steps
+
+<div className="grid gap-4 sm:grid-cols-3 my-8">
+  <a href="/underwriters/syndicates" className="block p-4 rounded-lg border border-border hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <h4 className="text-base font-semibold text-foreground m-0">🏛️ Syndicates →</h4>
+    <p className="text-sm text-muted-foreground m-0 mt-1">Passive LP via managed vaults</p>
+  </a>
+  <a href="/underwriters/capital-and-leverage" className="block p-4 rounded-lg border border-border hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <h4 className="text-base font-semibold text-foreground m-0">📊 Capital & Leverage →</h4>
+    <p className="text-sm text-muted-foreground m-0 mt-1">Risk points, leverage controls</p>
+  </a>
+  <a href="/underwriters/risk-assessment" className="block p-4 rounded-lg border border-border hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline">
+    <h4 className="text-base font-semibold text-foreground m-0">🔍 Risk Assessment →</h4>
+    <p className="text-sm text-muted-foreground m-0 mt-1">Evaluating and rating pools</p>
+  </a>
+</div>

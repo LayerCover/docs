@@ -1,0 +1,177 @@
+---
+title: SDK Reference
+description: Full API reference for @layercover/sdk
+order: 3
+slug: developers/sdk-reference
+---
+
+import { Callout } from '@/components/Callout'
+
+Complete API documentation for the `@layercover/sdk` package.
+
+Complete API documentation for the `@layercover/sdk` package.
+
+---
+
+## BuyCoverModal {#buycovermodal}
+
+For full control over modal visibility with your own trigger UI:
+
+```tsx
+import { BuyCoverModal } from '@layercover/sdk/react';
+
+function MyPage() {
+  const [isOpen, setIsOpen] = useState(false);
+  const { data: walletClient } = useWalletClient();
+
+  return (
+    <>
+      <button onClick={() => setIsOpen(true)}>Buy Cover</button>
+
+      <BuyCoverModal
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        walletClient={walletClient}
+        poolId={1}
+        onSuccess={() => {
+          setIsOpen(false);
+          refetchPositions();
+        }}
+      />
+    </>
+  );
+}
+```
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `open` | `boolean` | ✅ | Controls modal visibility |
+| `onClose` | `() => void` | ✅ | Called when modal is dismissed |
+| `walletClient` | `WalletClient` | ✅ | viem WalletClient |
+| `poolId` | `number` | ✅ | Target pool ID |
+| `onSuccess` | `() => void` | | Callback on successful purchase |
+| `referralCode` | `string` | | Referral code |
+| `theme` | `Theme` | | Custom theme |
+
+---
+
+## Headless SDK {#headless}
+
+For complete control without any UI - build your own purchase flow:
+
+```typescript
+import { LayerCoverSDK } from '@layercover/sdk';
+
+const sdk = new LayerCoverSDK(walletClient, POLICY_MANAGER_ADDRESS, {
+  apiBaseUrl: 'https://app.layercover.com',
+  deployment: 'base_usdc',
+  chainId: 8453,
+});
+```
+
+### Fetching Quotes
+
+```typescript
+// Get all available fixed-rate quotes for a pool
+const quotes = await sdk.getFixedRateQuotes(poolId);
+
+console.log(quotes[0]);
+// {
+//   rate: 500,        // 5.00% annualised
+//   maxAmount: 50000, // up to $50K coverage
+//   duration: 90,     // days
+//   maker: '0x...',   // underwriter address
+// }
+```
+
+### Purchasing Coverage
+
+```typescript
+const result = await sdk.purchase(poolId, coverAmount, durationWeeks);
+
+console.log(result);
+// {
+//   policyId: 42,
+//   txHash: '0x...',
+//   premium: '123.29',
+//   coverAmount: '10000',
+// }
+```
+
+### Constructor Options
+
+| Option | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `walletClient` | `WalletClient` | ✅ | viem WalletClient |
+| `policyManagerAddress` | `Address` | ✅ | PolicyManager contract address |
+| `apiBaseUrl` | `string` | ✅ | API base URL |
+| `deployment` | `string` | ✅ | Deployment identifier |
+| `chainId` | `number` | ✅ | Target chain ID |
+
+---
+
+## useLayerCover Hook
+
+React hook for the most common SDK operations:
+
+```tsx
+import { useLayerCover } from '@layercover/sdk/react';
+
+function CoveragePanel({ poolId }) {
+  const {
+    quotes,       // Available quotes
+    bestRate,     // Lowest rate quote
+    purchase,     // Purchase function
+    loading,      // Loading state
+    error,        // Error state
+  } = useLayerCover({
+    walletClient,
+    policyManagerAddress: POLICY_MANAGER_ADDRESS,
+    poolId,
+  });
+
+  const handlePurchase = async () => {
+    const result = await purchase('1000', 4); // $1000, 4 weeks
+    console.log(`Policy minted: #${result.policyId}`);
+  };
+
+  if (loading) return <div>Loading quotes...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return (
+    <div>
+      <p>Best rate: {bestRate?.rate} bps</p>
+      <button onClick={handlePurchase}>Purchase</button>
+    </div>
+  );
+}
+```
+
+| Return Value | Type | Description |
+| :--- | :--- | :--- |
+| `quotes` | `Quote[]` | All available quotes for the pool |
+| `bestRate` | `Quote \| null` | Quote with the lowest rate |
+| `purchase` | `(amount, weeks) => Promise` | Execute a purchase |
+| `loading` | `boolean` | True while fetching quotes |
+| `error` | `Error \| null` | Error object if fetch failed |
+
+---
+
+## Contract Addresses
+
+Get the latest contract addresses programmatically:
+
+```typescript
+// Via the API
+const config = await fetch('https://app.layercover.com/api/config');
+const { policyManagerAddress, chainId, deployment } = await config.json();
+```
+
+Or see the [Contract Addresses](/resources/contract-addresses) page for a static reference.
+
+---
+
+## Need Help?
+
+- **Discord:** [discord.gg/layercover](https://discord.gg/layercover)
+- **Contract Interfaces:** [Smart Contracts Reference](/contracts)

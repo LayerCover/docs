@@ -230,22 +230,38 @@ export function getPrevNext(
   docs: DocPage[],
   currentSlug: string[]
 ): { prev: DocPage | null; next: DocPage | null } {
-  const sortedDocs = [...docs].sort((a, b) => {
-    const orderA = a.frontmatter.order ?? 999
-    const orderB = b.frontmatter.order ?? 999
-    return orderA - orderB
-  })
+  // Build the sidebar tree and flatten it to get the correct reading order.
+  // This ensures prev/next follows the sidebar hierarchy instead of a flat sort.
+  const sidebar = buildSidebar(docs)
+  const flatOrder: string[] = []
 
-  const currentIndex = sortedDocs.findIndex(
-    (doc) => doc.slug.join('/') === currentSlug.join('/')
-  )
+  function flatten(items: SidebarItem[]) {
+    for (const item of items) {
+      if (item.href) {
+        flatOrder.push(item.href)
+      }
+      if (item.children) {
+        flatten(item.children)
+      }
+    }
+  }
+  flatten(sidebar)
+
+  const currentHref = currentSlug.length > 0 ? '/' + currentSlug.join('/') : '/'
+  const currentIndex = flatOrder.indexOf(currentHref)
 
   if (currentIndex === -1) {
     return { prev: null, next: null }
   }
 
+  const findDoc = (href: string) =>
+    docs.find((d) => {
+      const docHref = d.slug.length > 0 ? '/' + d.slug.join('/') : '/'
+      return docHref === href
+    }) ?? null
+
   return {
-    prev: currentIndex > 0 ? sortedDocs[currentIndex - 1] : null,
-    next: currentIndex < sortedDocs.length - 1 ? sortedDocs[currentIndex + 1] : null,
+    prev: currentIndex > 0 ? findDoc(flatOrder[currentIndex - 1]) : null,
+    next: currentIndex < flatOrder.length - 1 ? findDoc(flatOrder[currentIndex + 1]) : null,
   }
 }

@@ -4,45 +4,65 @@ description: Official LayerCover channels, programs, and contribution paths
 order: 6
 sidebar: Community
 ---
+import { Callout } from '@/components/Callout'
 
-LayerCover is built in public. Join the community to follow protocol updates, share feedback, or contribute code and documentation.
+<Callout type="info">
+  **TL;DR:** LayerCover is built in public. Join the community to follow updates, get support, or contribute code and documentation.
+</Callout>
+
+---
 
 ## Official Channels
 
-### Discord
+<div className="grid gap-4 sm:grid-cols-2 my-8">
+  <a href="https://discord.gg/layercover" className="group block p-6 rounded-xl border border-border bg-gradient-to-br from-background to-indigo-50/50 dark:to-indigo-900/20 hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline" target="_blank" rel="noopener noreferrer">
+    <div className="text-3xl mb-3 grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">💬</div>
+    <h3 className="text-lg font-semibold text-foreground mb-2">Discord</h3>
+    <p className="text-sm text-muted-foreground m-0">Primary hub for support, governance updates, and real-time discussion. Watch <strong>#announcements</strong>, <strong>#governance</strong>, and <strong>#developers</strong>.</p>
+  </a>
+  <a href="https://twitter.com/LayerCover" className="group block p-6 rounded-xl border border-border bg-gradient-to-br from-background to-sky-50/50 dark:to-sky-900/20 hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline" target="_blank" rel="noopener noreferrer">
+    <div className="text-3xl mb-3 grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">🐦</div>
+    <h3 className="text-lg font-semibold text-foreground mb-2">Twitter / X</h3>
+    <p className="text-sm text-muted-foreground m-0">Follow <strong>@LayerCover</strong> for announcements, milestones, and community spotlights.</p>
+  </a>
+  <a href="https://t.me/layercover" className="group block p-6 rounded-xl border border-border bg-gradient-to-br from-background to-blue-50/50 dark:to-blue-900/20 hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline" target="_blank" rel="noopener noreferrer">
+    <div className="text-3xl mb-3 grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">✈️</div>
+    <h3 className="text-lg font-semibold text-foreground mb-2">Telegram</h3>
+    <p className="text-sm text-muted-foreground m-0">Mobile-first broadcast channel for condensed updates and incident alerts.</p>
+  </a>
+  <a href="https://github.com/LayerCover" className="group block p-6 rounded-xl border border-border bg-gradient-to-br from-background to-gray-50/50 dark:to-gray-800/20 hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 no-underline" target="_blank" rel="noopener noreferrer">
+    <div className="text-3xl mb-3 grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">💻</div>
+    <h3 className="text-lg font-semibold text-foreground mb-2">GitHub</h3>
+    <p className="text-sm text-muted-foreground m-0">Track the roadmap, open issues, or submit pull requests. Docs live in the <code>docs</code> repositories.</p>
+  </a>
+</div>
 
-Primary hub for support, governance updates, and real-time discussion. Join the [Discord server](https://discord.gg/layercover) and watch the **#announcements**, **#governance**, and **#developers** channels for release notes and integration help.
-
-### Twitter / X
-
-Follow [@LayerCover](https://twitter.com/LayerCover) for high-level announcements, protocol milestones, and community spotlights.
-
-### Telegram
-
-Prefer mobile-first chats? Subscribe to the [Telegram broadcast](https://t.me/layercover) for condensed updates and incident alerts.
-
-### GitHub
-
-Track roadmap progress, open issues, or submit pull requests in the [LayerCover GitHub organization](https://github.com/LayerCover). Documentation improvements live in the `docs` repositories, while protocol changes are handled in the smart contract packages.
+---
 
 ## Programs & Contributions
 
-- **Referral program**: Grow coverage demand and earn rewards by following the process outlined in [Referrals](/concepts/referrals).
-- **Bug bounty**: Security researchers can monitor the [Security & Audits](/resources/audits) page for the latest bounty scope and payout structure.
-- **Governance**: Learn how proposals move through the pipeline in [Governance Overview](/governance/governance) and participate in RFC threads before on-chain votes.
-- **Documentation**: Found an issue? Open a GitHub issue or submit a pull request—most pages list their source path in the right-hand sidebar for quick navigation.
+| Program | Description | Link |
+| :--- | :--- | :--- |
+| **Referral Program** | Grow coverage demand and earn rewards | [Referrals →](/protocol/referrals) |
+| **Bug Bounty** | Report vulnerabilities for up to $1M in rewards | [Security & Audits →](/resources/audits) |
+| **Governance** | Participate in RFC threads and on-chain votes | [Governance →](/governance/governance) |
+| **Documentation** | Fix issues or submit PRs - source paths in the sidebar | [GitHub →](https://github.com/LayerCover) |
+
+---
 
 ## Community Guidelines
 
-1. **Stay respectful** – professional discourse keeps the signal high.
-2. **Protect sensitive data** – never share private keys, seed phrases, or personal information in community forums.
-3. **Flag incidents quickly** – suspected bugs or security issues should be reported privately to [security@layercover.com](mailto:security@layercover.com) before posting publicly.
-4. **Keep discussions constructive** – cite data, dashboards, or on-chain evidence when debating governance or risk topics.
+1. **Stay respectful** - professional discourse keeps the signal high
+2. **Protect sensitive data** - never share private keys or seed phrases in public forums
+3. **Flag incidents quickly** - report suspected bugs to [security@layercover.com](mailto:security@layercover.com) before posting publicly
+4. **Keep it constructive** - cite data, dashboards, or on-chain evidence when debating
+
+---
 
 ## Support
 
-- **Protocol support**: Post in **#support** on Discord for general questions.
-- **Integration help**: Use the **#developers** channel or tag maintainers on GitHub.
-- **Partnerships & ecosystem**: Email [ecosystem@layercover.com](mailto:ecosystem@layercover.com) to discuss integrations, referral campaigns, or co-marketing ideas.
-
-Bookmark this page for quick links to the LayerCover ecosystem as it evolves.
+| Need | Where |
+| :--- | :--- |
+| General questions | **#support** on [Discord](https://discord.gg/layercover) |
+| Integration help | **#developers** channel or tag maintainers on GitHub |
+| Partnerships & ecosystem | [ecosystem@layercover.com](mailto:ecosystem@layercover.com) |

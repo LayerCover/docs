@@ -14,34 +14,54 @@ interface SearchResult {
 
 // Static search index - in production this would be loaded from a JSON file
 const SEARCH_INDEX: SearchResult[] = [
-    // Concepts
-    { title: 'Core Concepts', slug: '/concepts', excerpt: 'The fundamental architecture of LayerCover', section: 'Concepts' },
-    { title: 'Buying Cover', slug: '/concepts/buying-cover', excerpt: 'Purchase protection for your crypto assets', section: 'Concepts' },
-    { title: 'Fixed Rate Cover', slug: '/concepts/buying-cover/fixed-rate-cover', excerpt: 'Lock in rates with fixed-term policies', section: 'Concepts' },
-    { title: 'Filing a Claim', slug: '/concepts/buying-cover/claims-payouts', excerpt: 'How to file claims and receive payouts', section: 'Concepts' },
-    { title: 'Core Underwriting', slug: '/concepts/underwriting/core-concepts', excerpt: 'Underwriting fundamentals and capital deployment', section: 'Underwriting' },
-    { title: 'Syndicates', slug: '/concepts/underwriting/syndicates', excerpt: 'Managed underwriting vaults', section: 'Underwriting' },
-    { title: 'Paying Claims', slug: '/concepts/underwriting/paying-claims', excerpt: 'How claims affect underwriter capital', section: 'Underwriting' },
-    { title: 'Risk Assessment', slug: '/concepts/underwriting/risk-assessment', excerpt: 'Risk points, mutex groups, and pool ratings', section: 'Underwriting' },
-    { title: 'Intent-Based Pricing', slug: '/concepts/pricing/intent-based', excerpt: 'How quotes and premiums work', section: 'Pricing' },
-    { title: 'Reinsurance', slug: '/concepts/reinsurance', excerpt: 'Protocol-native reinsurance and CAT pool', section: 'Concepts' },
-    { title: 'Governance', slug: '/concepts/governance', excerpt: 'Protocol governance and administration', section: 'Governance' },
-    { title: 'Referrals', slug: '/concepts/referrals', excerpt: 'Earn rewards for referring users', section: 'Concepts' },
+    // Getting Started
+    { title: 'Introduction', slug: '/getting-started', excerpt: 'Get up and running with LayerCover', section: 'Getting Started' },
+    // Policyholders
+    { title: 'Policyholders', slug: '/policyholders', excerpt: 'Protect your DeFi positions with on-chain insurance', section: 'Policyholders' },
+    { title: 'Buying Cover', slug: '/policyholders/buying-cover', excerpt: 'Step-by-step guide to purchasing your first LayerCover policy', section: 'Policyholders' },
+    { title: 'Coverage Types', slug: '/policyholders/coverage-types', excerpt: 'Stablecoin depeg, vault cover, and parametric protection explained', section: 'Policyholders' },
+    { title: 'Filing Claims', slug: '/policyholders/filing-claims', excerpt: 'How to file a claim and receive your instant payout', section: 'Policyholders' },
+    { title: 'Managing Policies', slug: '/policyholders/managing-policies', excerpt: 'View, transfer, cancel, and renew your LayerCover policies', section: 'Policyholders' },
+    // Underwriters
+    { title: 'Underwriters', slug: '/underwriters', excerpt: 'Earn premiums and DeFi yield by backing on-chain insurance', section: 'Underwriters' },
+    { title: 'Syndicates', slug: '/underwriters/syndicates', excerpt: 'Passive underwriting through professionally managed vaults', section: 'Underwriters' },
+    { title: 'Managing a Syndicate', slug: '/underwriters/managing-a-syndicate', excerpt: 'Allocation, intents, fees, and operations for Syndicate Managers', section: 'Underwriters' },
+    { title: 'Capital & Leverage', slug: '/underwriters/capital-and-leverage', excerpt: 'How capital pledges, risk points, and leverage controls work', section: 'Underwriters' },
+    { title: 'Risk Assessment', slug: '/underwriters/risk-assessment', excerpt: 'Evaluating risk pools before allocating capital', section: 'Underwriters' },
+    { title: 'Claims & Salvage', slug: '/underwriters/claims-and-salvage', excerpt: 'How losses are distributed and salvage rights work for underwriters', section: 'Underwriters' },
+    // Protocol
+    { title: 'Protocol Architecture', slug: '/protocol', excerpt: 'How LayerCover works under the hood', section: 'Protocol' },
+    { title: 'How Cover Works', slug: '/protocol/how-cover-works', excerpt: 'The LayerCover insurance model and the on-chain Lloyd\'s analogy', section: 'Protocol' },
+    { title: 'Pricing Model', slug: '/protocol/pricing', excerpt: 'Fixed-rate intent system and the RFQ marketplace', section: 'Protocol' },
+    { title: 'Capital Pool', slug: '/protocol/capital-pool', excerpt: 'ERC-4626 vault mechanics, yield adapters, and solvency controls', section: 'Protocol' },
+    { title: 'Backstop Pool', slug: '/protocol/backstop-pool', excerpt: 'The protocol-wide safety net that absorbs catastrophic losses', section: 'Protocol' },
+    { title: '3rd Party Reinsurance', slug: '/protocol/reinsurance', excerpt: 'External reinsurance capacity via the hook-based integration system', section: 'Protocol' },
+    { title: 'Governance & Administration', slug: '/protocol/governance', excerpt: 'Protocol administration, emergency controls, and UMA dispute resolution', section: 'Protocol' },
+    // Governance
+    { title: 'Governance', slug: '/governance/governance', excerpt: 'Governance in the LayerCover protocol', section: 'Governance' },
+    { title: 'Referral System', slug: '/governance/referral-system', excerpt: 'Referral system in the LayerCover protocol', section: 'Governance' },
+    { title: 'Tokenomics', slug: '/governance/tokenomics', excerpt: 'Tokenomics in the LayerCover protocol', section: 'Governance' },
+    // Developers
+    { title: 'Developers', slug: '/developers', excerpt: 'Integrate LayerCover insurance into your dApp', section: 'Developers' },
+    { title: 'Quickstart', slug: '/developers/quickstart', excerpt: 'Add LayerCover insurance to your dApp in under 5 minutes', section: 'Developers' },
+    { title: 'SDK Reference', slug: '/developers/sdk-reference', excerpt: 'Full API reference for @layercover/sdk', section: 'Developers' },
+    { title: 'API Reference', slug: '/developers/api-reference', excerpt: 'REST API endpoints for 3rd party integrations', section: 'Developers' },
+    { title: 'Custom Theming', slug: '/developers/theming', excerpt: 'Customise the LayerCover widget to match your brand', section: 'Developers' },
     // Resources
-    { title: 'Glossary', slug: '/resources/glossary', excerpt: 'Comprehensive terms and definitions', section: 'Resources' },
-    { title: 'FAQ', slug: '/resources/faq', excerpt: 'Frequently asked questions', section: 'Resources' },
-    { title: 'Contract Addresses', slug: '/resources/contract-addresses', excerpt: 'Deployed contract addresses by network', section: 'Resources' },
-    { title: 'Pool Parameters', slug: '/resources/parameters', excerpt: 'Live configuration from deployed contracts', section: 'Resources' },
-    { title: 'Audits', slug: '/resources/audits', excerpt: 'Security audit information', section: 'Resources' },
-    // Technical
-    { title: 'Policy System', slug: '/technical-reference/policy-system', excerpt: 'Policy NFT technical details', section: 'Technical' },
-    { title: 'Syndicate System', slug: '/technical-reference/syndicate-system', excerpt: 'Syndicate vault architecture', section: 'Technical' },
-    { title: 'Payout System', slug: '/technical-reference/payout-system', excerpt: 'Claim processing and payout mechanics', section: 'Technical' },
-    // Guides
-    { title: 'User Guides', slug: '/guides', excerpt: 'Step-by-step guides for using LayerCover', section: 'Guides' },
-    // SDK
-    { title: 'SDK Integration', slug: '/sdk', excerpt: 'Integrate LayerCover insurance into your dApp', section: 'SDK' },
-    { title: 'React Hook', slug: '/sdk#react-hook', excerpt: 'useLayerCover hook for React applications', section: 'SDK' },
+    { title: 'Glossary', slug: '/resources/glossary', excerpt: 'Comprehensive glossary of LayerCover terms and concepts', section: 'Resources' },
+    { title: 'FAQ', slug: '/resources/faq', excerpt: 'Frequently asked questions about LayerCover', section: 'Resources' },
+    { title: 'Contract Addresses', slug: '/resources/contract-addresses', excerpt: 'Quick reference for deployed smart contract addresses', section: 'Resources' },
+    { title: 'Pool Parameters', slug: '/resources/parameters', excerpt: 'Live configuration from the deployed LayerCover contracts', section: 'Resources' },
+    { title: 'Security & Audits', slug: '/resources/audits', excerpt: 'Security audits, testing practices, and guarded launch strategy', section: 'Resources' },
+    { title: 'Access Controls', slug: '/resources/access-controls', excerpt: 'Permission system and role-based access control', section: 'Resources' },
+    { title: 'Brand Kit', slug: '/resources/brand-kit', excerpt: 'Official LayerCover brand assets, logos, and usage guidelines', section: 'Resources' },
+    { title: 'Community', slug: '/resources/community', excerpt: 'Official LayerCover channels, programs, and contribution paths', section: 'Resources' },
+    { title: 'External Resources', slug: '/resources/external-resources', excerpt: 'Official LayerCover links and resources', section: 'Resources' },
+    { title: 'Code Licensing', slug: '/resources/licensing', excerpt: 'Software licenses and usage terms for LayerCover protocol', section: 'Resources' },
+    { title: 'Privacy Policy', slug: '/resources/privacy-policy', excerpt: 'How LayerCover collects, uses, and protects your information', section: 'Resources' },
+    { title: 'Terms of Service', slug: '/resources/terms-of-service', excerpt: 'Terms and conditions governing your use of LayerCover', section: 'Resources' },
+    // Smart Contract Reference
+    { title: 'Smart Contracts', slug: '/contracts', excerpt: 'Complete smart contract API reference', section: 'Contracts' },
 ]
 
 export function DocSearch() {
@@ -170,11 +190,11 @@ export function DocSearch() {
                                             ))}
                                         </ul>
                                     ) : query ? (
-                                        <p className="py-8 text-center text-muted-foreground">No results found for &quot;{query}&quot;</p>
+                                        <p className="py-8 text-center text-muted-foreground">No results found for "{query}"</p>
                                     ) : (
                                         <div className="py-8 text-center text-muted-foreground">
                                             <p className="mb-2">Start typing to search...</p>
-                                            <p className="text-xs">Try: &quot;claims&quot;, &quot;syndicate&quot;, &quot;salvage&quot;</p>
+                                            <p className="text-xs">Try: "claims", "syndicate", "salvage"</p>
                                         </div>
                                     )}
                                 </div>

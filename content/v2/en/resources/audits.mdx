@@ -4,31 +4,67 @@ description: Security audits, testing practices, and guarded launch strategy
 order: 7
 sidebar: Security & Audits
 ---
+import { Callout } from '@/components/Callout'
 
-LayerCover prioritizes security through a multi-layered approach combining formal audits, economic modeling, and a staged mainnet rollout.
+<Callout type="warning">
+  **LayerCover has not yet launched on mainnet.** All audits and programs below are planned milestones. This page will be updated with reports as they are completed.
+</Callout>
+
+LayerCover takes a defence-in-depth approach to security - formal audits, economic stress testing, a guarded launch, and a bug bounty program all work together to protect user funds.
+
+---
+
+## Security Strategy
+
+```mermaid
+flowchart LR
+    A["🔍 Tier-1 Audit"] --> B["🐛 Bug Bounty"]
+    B --> C["🚀 Guarded Launch"]
+    C --> D["📊 Economic Review"]
+    D --> E["🌐 Full Mainnet"]
+
+    style A fill:#ef444420,stroke:#ef4444
+    style B fill:#f59e0b20,stroke:#f59e0b
+    style C fill:#3b82f620,stroke:#3b82f6
+    style D fill:#8b5cf620,stroke:#8b5cf6
+    style E fill:#22c55e20,stroke:#22c55e
+```
+
+---
+
+## Audit Timeline
+
+| Phase | Timeline | Scope | Status |
+| :--- | :--- | :--- | :---: |
+| **Pre-Seed Audit** | Q1 2026 | Core suite - PolicyManager, RiskManager, CapitalPool, PoolRegistry | 🔜 Planned |
+| **Post-Seed Audit 1** | Q3 2026 | Independent re-audit of upgraded contracts and deployment scripts | 📋 Scheduled |
+| **Post-Seed Audit 2** | Q3 2026 | Second independent audit with operational runbook review | 📋 Scheduled |
+
+---
 
 ## Guarded Mainnet Launch
 
-To mitigate early-stage risk, LayerCover will execute a **staged mainnet rollout** (similar to EigenLayer).
+To mitigate early-stage risk, LayerCover will execute a **staged mainnet rollout** (similar to EigenLayer):
 
-* **Deposit Caps:** Initial liquidity will be strictly limited via global TVL caps and per-pool maximums.
-* **Progressive Expansion:** Caps will be raised incrementally via governance only after stability milestones are met.
-* **Objective:** This ensures the protocol scale matches its proven security maturity, preventing outsized losses during the hardening phase.
+| Safeguard | Description |
+| :--- | :--- |
+| **Deposit Caps** | Initial liquidity strictly limited via global TVL caps and per-pool maximums |
+| **Progressive Expansion** | Caps raised incrementally via governance after stability milestones are met |
+| **Monitoring** | Real-time on-chain monitoring with automated circuit breakers |
 
-## Smart Contract Audits
-
-We engage Tier-1 security firms to validate the protocol architecture and codebase.
-
-| Timeline | Phase | Scope |
-| :--- | :--- | :--- |
-| **Q1 2026** | **Pre-Seed Audit** | Comprehensive architecture audit of the core suite (PolicyManager, RiskManager, CapitalPool, PoolRegistry). |
-| **Q3 2026** | **Post-Seed Audits** | Two subsequent, independent re-audits of upgraded contracts, deployment scripts, and operational runbooks. |
+---
 
 ## Economic Risk Review
 
 **Target: Q3–Q4 2026**
 
-Before mainnet launch, we will commission third-party economic simulations (targeting partners like Gauntlet or Chaos Labs). This ensures our reserve ratios, coverage limits, and fee calibrations can withstand market volatility and stress scenarios.
+Before mainnet launch, we will commission third-party economic simulations (targeting partners like Gauntlet or Chaos Labs) to validate:
+
+- Reserve ratios and solvency margins under stress
+- Coverage limit calibration
+- Fee and premium sensitivity to market volatility
+
+---
 
 ## Bug Bounty Program
 
@@ -36,6 +72,17 @@ Before mainnet launch, we will commission third-party economic simulations (targ
 
 LayerCover will launch a **$1,000,000** bug bounty program hosted on **Immunefi**.
 
-* **Scope:** All production smart contracts, SDKs, APIs, and frontends.
-* **Payouts:** Tiered based on severity (OWASP/Impact).
-* **Competition:** The program opens with a time-bound competition offering bonus multipliers and spotlight features for top-ranked pre-launch discoveries.
+| Detail | Value |
+| :--- | :--- |
+| **Total Pool** | $1,000,000 |
+| **Scope** | All production smart contracts, SDKs, APIs, and frontends |
+| **Payouts** | Tiered based on severity (OWASP/Impact) |
+| **Launch Event** | Time-bound competition with bonus multipliers for pre-launch discoveries |
+
+---
+
+## Related Pages
+
+- [Access Controls](/resources/access-controls) - Role hierarchy and permission matrices
+- [Smart Contracts](/contracts) - Full interface reference
+- [Governance](/governance/governance) - How protocol parameters are changed
